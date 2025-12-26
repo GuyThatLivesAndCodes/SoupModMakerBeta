@@ -41,6 +41,9 @@ jobs:
       - name: Build core
         run: npm run build:core
 
+      - name: Install electron-app dependencies
+        run: cd electron-app && npm install
+
       - name: Build Electron app (Linux/Mac)
         if: matrix.platform != 'windows'
         run: cd electron-app && npm run build

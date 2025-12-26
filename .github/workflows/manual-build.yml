@@ -36,6 +36,9 @@ jobs:
       - name: Build core
         run: npm run build:core
 
+      - name: Install electron-app dependencies
+        run: cd electron-app && npm install
+
       - name: Build Windows executable
         run: cd electron-app && npm run build
         env:
