@@ -31,12 +31,30 @@ Unlike MCreator, SoupModMaker is built on a **flexible, plugin-based architectur
 
 ## Quick Start
 
-### Prerequisites
+### Option 1: Download Pre-Built Executable (Recommended)
+
+**Get the latest release:**
+1. Go to [Releases](https://github.com/GuyThatLivesAndCodes/SoupModMakerBeta/releases)
+2. Download for your platform:
+   - **Windows**: `SoupModMaker-Setup-{version}.exe`
+   - **macOS**: `SoupModMaker-{version}.dmg`
+   - **Linux**: `SoupModMaker-{version}.AppImage`
+3. Install and run!
+
+**Or download from GitHub Actions:**
+1. Go to [Actions](https://github.com/GuyThatLivesAndCodes/SoupModMakerBeta/actions)
+2. Click on **"Manual Build"** workflow
+3. Click **"Run workflow"** → Select your platform → **"Run workflow"**
+4. Download artifacts when build completes
+
+### Option 2: Build from Source
+
+#### Prerequisites
 
 - Node.js 18+ and npm 9+
 - Git
 
-### Installation
+#### Installation
 
 ```bash
 # Clone the repository
@@ -52,16 +70,20 @@ npm run dev
 
 The application will start in development mode with hot reload enabled.
 
-### Building for Production
+#### Building Executable
 
 ```bash
 # Build all packages
 npm run build
 
-# Build standalone executable
+# Build standalone executable for your platform
 cd electron-app
 npm run build
 ```
+
+Executables will be in `electron-app/release/`
+
+See [BUILDING.md](BUILDING.md) for detailed build instructions, cross-platform builds, and GitHub Actions automation.
 
 ## Architecture
 

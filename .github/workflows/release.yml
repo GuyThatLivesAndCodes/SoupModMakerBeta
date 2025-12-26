@@ -1,0 +1,103 @@
+name: Release Build
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to release (e.g., 0.1.0)'
+        required: true
+        default: '0.1.0'
+
+jobs:
+  release:
+    name: Release on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      matrix:
+        include:
+          - os: ubuntu-latest
+            platform: linux
+          - os: windows-latest
+            platform: windows
+          - os: macos-latest
+            platform: mac
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm run setup
+
+      - name: Build core
+        run: npm run build:core
+
+      - name: Build Electron app (Linux/Mac)
+        if: matrix.platform != 'windows'
+        run: cd electron-app && npm run build
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build Electron app (Windows)
+        if: matrix.platform == 'windows'
+        run: cd electron-app && npm run build
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload Linux artifacts
+        if: matrix.platform == 'linux'
+        uses: actions/upload-artifact@v3
+        with:
+          name: SoupModMaker-Linux
+          path: |
+            electron-app/release/*.AppImage
+            electron-app/release/*.deb
+
+      - name: Upload Windows artifacts
+        if: matrix.platform == 'windows'
+        uses: actions/upload-artifact@v3
+        with:
+          name: SoupModMaker-Windows
+          path: |
+            electron-app/release/*.exe
+
+      - name: Upload Mac artifacts
+        if: matrix.platform == 'mac'
+        uses: actions/upload-artifact@v3
+        with:
+          name: SoupModMaker-Mac
+          path: |
+            electron-app/release/*.dmg
+
+  create-release:
+    name: Create GitHub Release
+    needs: release
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/')
+
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v3
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            SoupModMaker-Linux/*
+            SoupModMaker-Windows/*
+            SoupModMaker-Mac/*
+          draft: false
+          prerelease: false
+          generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
