@@ -2,16 +2,31 @@
  * Main Application Component
  */
 
-import React, { useState } from 'react';
-import { Box } from '@mui/material';
+import React, { useState, useEffect } from 'react';
+import { Box, Snackbar, Alert } from '@mui/material';
 import Toolbar from './components/Toolbar';
 import Sidebar from './components/Sidebar';
 import EditorArea from './components/EditorArea';
 import WelcomeScreen from './components/WelcomeScreen';
+import { useAutoSave } from './hooks/useAutoSave';
 
 const App: React.FC = () => {
   const [currentProject, setCurrentProject] = useState<any>(null);
   const [selectedFeature, setSelectedFeature] = useState<any>(null);
+  const [autoSaveEnabled, setAutoSaveEnabled] = useState(true);
+  const [showAutoSaveNotif, setShowAutoSaveNotif] = useState(false);
+
+  // Auto-save functionality
+  const { lastSaved, isSaving } = useAutoSave(currentProject, {
+    enabled: autoSaveEnabled && currentProject !== null,
+    interval: 300000, // 5 minutes
+    onSaveSuccess: () => {
+      setShowAutoSaveNotif(true);
+    },
+    onSaveError: (error) => {
+      console.error('Auto-save failed:', error);
+    },
+  });
 
   return (
     <Box
@@ -135,6 +150,23 @@ const App: React.FC = () => {
           />
         )}
       </Box>
+
+      {/* Auto-save notification */}
+      <Snackbar
+        open={showAutoSaveNotif}
+        autoHideDuration={3000}
+        onClose={() => setShowAutoSaveNotif(false)}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+      >
+        <Alert
+          onClose={() => setShowAutoSaveNotif(false)}
+          severity="success"
+          variant="filled"
+          sx={{ width: '100%' }}
+        >
+          Project auto-saved successfully
+        </Alert>
+      </Snackbar>
     </Box>
   );
 };

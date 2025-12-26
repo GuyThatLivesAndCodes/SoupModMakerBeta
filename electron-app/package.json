@@ -2,13 +2,14 @@
   "name": "@soupmodmaker/electron-app",
   "version": "0.1.0",
   "description": "SoupModMaker Desktop Application",
-  "main": "dist/main/index.js",
+  "main": "dist-electron/index.js",
   "scripts": {
     "dev": "concurrently \"npm run dev:vite\" \"npm run dev:electron\"",
     "dev:vite": "vite",
     "dev:electron": "wait-on http://localhost:5173 && electron .",
-    "build": "tsc && vite build && electron-builder --dir",
+    "build": "tsc && vite build && electron-builder",
     "build:dir": "tsc && vite build && electron-builder --dir",
+    "build:linux": "tsc && vite build && electron-builder --linux AppImage",
     "preview": "vite preview"
   },
   "dependencies": {
@@ -24,8 +25,9 @@
     "zustand": "^4.4.7"
   },
   "devDependencies": {
-    "@types/react": "^18.2.43",
-    "@types/react-dom": "^18.2.17",
+    "@types/node": "^25.0.3",
+    "@types/react": "^18.3.27",
+    "@types/react-dom": "^18.3.7",
     "@vitejs/plugin-react": "^4.2.1",
     "7zip-bin": "^5.2.0",
     "concurrently": "^8.2.2",
@@ -46,6 +48,7 @@
     },
     "files": [
       "dist/**/*",
+      "dist-electron/**/*",
       "package.json",
       "!**/*.map"
     ],
@@ -71,7 +74,9 @@
       "target": [
         {
           "target": "portable",
-          "arch": ["x64"]
+          "arch": [
+            "x64"
+          ]
         }
       ],
       "icon": "public/icon.ico",
@@ -97,11 +102,17 @@
       "target": [
         {
           "target": "dmg",
-          "arch": ["x64", "arm64"]
+          "arch": [
+            "x64",
+            "arm64"
+          ]
         },
         {
           "target": "zip",
-          "arch": ["x64", "arm64"]
+          "arch": [
+            "x64",
+            "arm64"
+          ]
         }
       ],
       "icon": "public/icon.icns",
@@ -134,15 +145,21 @@
       "target": [
         {
           "target": "AppImage",
-          "arch": ["x64"]
+          "arch": [
+            "x64"
+          ]
         },
         {
           "target": "deb",
-          "arch": ["x64"]
+          "arch": [
+            "x64"
+          ]
         },
         {
           "target": "rpm",
-          "arch": ["x64"]
+          "arch": [
+            "x64"
+          ]
         }
       ],
       "icon": "public/icon.png",

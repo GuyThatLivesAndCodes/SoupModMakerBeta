@@ -2,6 +2,9 @@
  * Project data structures
  */
 
+import { MobData } from './mob';
+import { EventData } from './event';
+
 export interface Project {
   /** Unique project ID */
   id: string;
@@ -26,6 +29,12 @@ export interface Project {
     created: number;
     modified: number;
   };
+
+  /** Content data */
+  content: ProjectContent;
+
+  /** Plugin configuration */
+  plugins: PluginConfiguration;
 }
 
 export interface ProjectMetadata {
@@ -139,3 +148,116 @@ export interface ProjectFile {
   version: string; // SoupModMaker file format version
   project: Project;
 }
+
+/**
+ * Project content (mobs, events, items, blocks, etc.)
+ */
+export interface ProjectContent {
+  mobs: MobData[];
+  events: EventData[];
+  blocks: any[];  // BlockData - to be implemented
+  items: any[];   // ItemData - to be implemented
+  biomes: any[];  // BiomeData - to be implemented
+  dimensions: any[]; // DimensionData - to be implemented
+}
+
+/**
+ * Plugin configuration for the project
+ */
+export interface PluginConfiguration {
+  /** List of enabled plugin IDs */
+  enabled: string[];
+
+  /** Plugin-specific settings */
+  settings: Record<string, any>;
+}
+
+/**
+ * Plugin metadata
+ */
+export interface PluginMetadata {
+  id: string;
+  name: string;
+  version: string;
+  description: string;
+  author: string;
+  icon?: string;
+  enabled: boolean;
+  installed: boolean;
+  dependencies?: string[];
+  minAppVersion?: string;
+  category?: PluginCategory;
+  filePath?: string;
+}
+
+export type PluginCategory =
+  | 'content'      // Mobs, items, blocks
+  | 'world'        // Biomes, structures, dimensions
+  | 'gameplay'     // Events, mechanics
+  | 'tools'        // Utilities, generators
+  | 'integration'; // Third-party integrations
+
+/**
+ * App-wide settings
+ */
+export interface AppSettings {
+  // Appearance
+  theme: 'light' | 'dark' | 'system';
+
+  // Recent projects
+  recentProjects: RecentProject[];
+  lastOpenedProject?: string;
+
+  // Plugins
+  installedPlugins: PluginMetadata[];
+  pluginDirectory: string;
+
+  // Editor preferences
+  autoSave: boolean;
+  autoSaveInterval: number; // in seconds
+
+  // Code generation
+  defaultPlatform: 'forge' | 'fabric' | 'neoforge';
+  defaultMinecraftVersion: string;
+  javaPackagePrefix: string;
+}
+
+/**
+ * Recent project entry
+ */
+export interface RecentProject {
+  name: string;
+  path: string;
+  lastOpened: Date;
+  minecraftVersion: string;
+  platform: string;
+}
+
+/**
+ * Default values
+ */
+export const DEFAULT_PROJECT_CONTENT: ProjectContent = {
+  mobs: [],
+  events: [],
+  blocks: [],
+  items: [],
+  biomes: [],
+  dimensions: [],
+};
+
+export const DEFAULT_PLUGIN_CONFIG: PluginConfiguration = {
+  enabled: [],
+  settings: {},
+};
+
+export const DEFAULT_APP_SETTINGS: AppSettings = {
+  theme: 'system',
+  recentProjects: [],
+  installedPlugins: [],
+  pluginDirectory: '',
+  autoSave: true,
+  autoSaveInterval: 300, // 5 minutes
+  defaultPlatform: 'forge',
+  defaultMinecraftVersion: '1.20.4',
+  javaPackagePrefix: 'com.example',
+};

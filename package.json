@@ -11,6 +11,10 @@
     "plugins/*",
     "generators"
   ],
+  "dependencies": {
+    "7zip-bin": "^5.2.0",
+    "app-builder-bin": "^4.0.0"
+  },
   "scripts": {
     "setup": "npm install && npm run build:core",
     "build:core": "npm run build --workspace=core",

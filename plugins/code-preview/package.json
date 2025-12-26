@@ -1,0 +1,45 @@
+{
+  "name": "@soupmodmaker/plugin-code-preview",
+  "version": "1.0.0",
+  "description": "Live code preview plugin - See generated Java code in real-time",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch"
+  },
+  "keywords": [
+    "soupmodmaker",
+    "plugin",
+    "code-preview",
+    "live-preview"
+  ],
+  "author": "SoupModMaker Team",
+  "license": "MIT",
+  "peerDependencies": {
+    "@soupmodmaker/core": "*",
+    "react": "^18.2.0",
+    "@mui/material": "^5.14.0"
+  },
+  "devDependencies": {
+    "@types/react": "^18.2.0",
+    "typescript": "^5.0.0"
+  },
+  "dependencies": {
+    "prismjs": "^1.29.0",
+    "@types/prismjs": "^1.26.0"
+  },
+  "soupmodmaker": {
+    "type": "plugin",
+    "category": "tools",
+    "provides": {
+      "components": [
+        {
+          "id": "code-preview",
+          "name": "Code Preview",
+          "component": "CodePreview"
+        }
+      ]
+    }
+  }
+}
