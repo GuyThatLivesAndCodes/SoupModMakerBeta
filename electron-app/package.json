@@ -1,0 +1,171 @@
+{
+  "name": "@soupmodmaker/electron-app",
+  "version": "0.1.0",
+  "description": "SoupModMaker Desktop Application",
+  "main": "dist/main/index.js",
+  "scripts": {
+    "dev": "concurrently \"npm run dev:vite\" \"npm run dev:electron\"",
+    "dev:vite": "vite",
+    "dev:electron": "wait-on http://localhost:5173 && electron .",
+    "build": "tsc && vite build && electron-builder",
+    "build:dir": "tsc && vite build && electron-builder --dir",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@emotion/react": "^11.11.1",
+    "@emotion/styled": "^11.11.0",
+    "@monaco-editor/react": "^4.6.0",
+    "@mui/icons-material": "^5.15.0",
+    "@mui/material": "^5.15.0",
+    "@soupmodmaker/core": "*",
+    "electron-store": "^8.1.0",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "zustand": "^4.4.7"
+  },
+  "devDependencies": {
+    "@types/react": "^18.2.43",
+    "@types/react-dom": "^18.2.17",
+    "@vitejs/plugin-react": "^4.2.1",
+    "concurrently": "^8.2.2",
+    "electron": "^28.0.0",
+    "electron-builder": "^24.9.1",
+    "typescript": "^5.3.0",
+    "vite": "^5.0.7",
+    "vite-plugin-electron": "^0.28.1",
+    "wait-on": "^7.2.0"
+  },
+  "build": {
+    "appId": "com.soupmodmaker.app",
+    "productName": "SoupModMaker",
+    "copyright": "Copyright © 2024 SoupModMaker Team",
+    "directories": {
+      "output": "release",
+      "buildResources": "public"
+    },
+    "files": [
+      "dist/**/*",
+      "package.json",
+      "!**/*.map"
+    ],
+    "extraResources": [
+      {
+        "from": "../generators",
+        "to": "generators"
+      },
+      {
+        "from": "../templates",
+        "to": "templates"
+      }
+    ],
+    "fileAssociations": [
+      {
+        "ext": "soup",
+        "name": "SoupModMaker Project",
+        "description": "SoupModMaker Project File",
+        "role": "Editor"
+      }
+    ],
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": ["x64", "ia32"]
+        },
+        {
+          "target": "portable",
+          "arch": ["x64"]
+        }
+      ],
+      "icon": "public/icon.ico",
+      "artifactName": "SoupModMaker-Setup-${version}-${arch}.${ext}",
+      "publisherName": "SoupModMaker Team"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "SoupModMaker",
+      "installerIcon": "public/icon.ico",
+      "uninstallerIcon": "public/icon.ico",
+      "installerHeaderIcon": "public/icon.ico",
+      "license": "../LICENSE",
+      "warningsAsErrors": false
+    },
+    "portable": {
+      "artifactName": "SoupModMaker-Portable-${version}.exe"
+    },
+    "mac": {
+      "target": [
+        {
+          "target": "dmg",
+          "arch": ["x64", "arm64"]
+        },
+        {
+          "target": "zip",
+          "arch": ["x64", "arm64"]
+        }
+      ],
+      "icon": "public/icon.icns",
+      "category": "public.app-category.developer-tools",
+      "hardenedRuntime": true,
+      "gatekeeperAssess": false,
+      "entitlements": "public/entitlements.mac.plist",
+      "entitlementsInherit": "public/entitlements.mac.plist",
+      "artifactName": "SoupModMaker-${version}-${arch}.${ext}"
+    },
+    "dmg": {
+      "contents": [
+        {
+          "x": 130,
+          "y": 220
+        },
+        {
+          "x": 410,
+          "y": 220,
+          "type": "link",
+          "path": "/Applications"
+        }
+      ],
+      "window": {
+        "width": 540,
+        "height": 380
+      }
+    },
+    "linux": {
+      "target": [
+        {
+          "target": "AppImage",
+          "arch": ["x64"]
+        },
+        {
+          "target": "deb",
+          "arch": ["x64"]
+        },
+        {
+          "target": "rpm",
+          "arch": ["x64"]
+        }
+      ],
+      "icon": "public/icon.png",
+      "category": "Development",
+      "synopsis": "Modern Minecraft Mod & Plugin Creator",
+      "description": "Create Minecraft mods and plugins for multiple versions with ease. SoupModMaker features a modern UI, plugin-based architecture, and multi-version support.",
+      "desktop": {
+        "Name": "SoupModMaker",
+        "Comment": "Minecraft Mod Creator",
+        "Categories": "Development;IDE;",
+        "Keywords": "minecraft;mod;modding;plugin;development;"
+      },
+      "artifactName": "SoupModMaker-${version}-${arch}.${ext}"
+    },
+    "publish": {
+      "provider": "github",
+      "owner": "GuyThatLivesAndCodes",
+      "repo": "SoupModMakerBeta"
+    },
+    "compression": "normal",
+    "asar": true
+  }
+}

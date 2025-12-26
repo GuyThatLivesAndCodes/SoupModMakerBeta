@@ -1,0 +1,74 @@
+# Fabric 1.20.4 Version Mapping
+platform: fabric
+version: 1.20.4
+loaderVersion: "0.15.0"
+javaVersion: 17
+
+capabilities:
+  block:
+    supported: true
+    capabilities:
+      customProperties: true
+      blockEntities: true
+      directionalBlocks: true
+  item:
+    supported: true
+  recipe:
+    supported: true
+
+mappings:
+  # Block material mappings (Fabric uses different API)
+  block.material:
+    values:
+      STONE: "FabricBlockSettings.create().mapColor(MapColor.STONE_GRAY)"
+      DIRT: "FabricBlockSettings.create().mapColor(MapColor.DIRT_BROWN)"
+      WOOD: "FabricBlockSettings.create().mapColor(MapColor.OAK_TAN).burnable()"
+      METAL: "FabricBlockSettings.create().mapColor(MapColor.IRON_GRAY).requiresTool()"
+      GLASS: "FabricBlockSettings.create().mapColor(MapColor.CLEAR).nonOpaque()"
+      ICE: "FabricBlockSettings.create().mapColor(MapColor.PALE_PURPLE).slipperiness(0.98f)"
+    default: "FabricBlockSettings.create()"
+
+  # Sound type mappings
+  block.soundType:
+    values:
+      STONE: "BlockSoundGroup.STONE"
+      WOOD: "BlockSoundGroup.WOOD"
+      GRAVEL: "BlockSoundGroup.GRAVEL"
+      GRASS: "BlockSoundGroup.GRASS"
+      METAL: "BlockSoundGroup.METAL"
+      GLASS: "BlockSoundGroup.GLASS"
+      WOOL: "BlockSoundGroup.WOOL"
+      SAND: "BlockSoundGroup.SAND"
+    default: "BlockSoundGroup.STONE"
+
+  # Creative mode tab (Fabric uses ItemGroups)
+  block.creativeTab:
+    values:
+      BUILDING_BLOCKS: "ItemGroups.BUILDING_BLOCKS"
+      DECORATIONS: "ItemGroups.COLORED_BLOCKS"
+      REDSTONE: "ItemGroups.REDSTONE"
+      TRANSPORTATION: "ItemGroups.TOOLS"
+      MISC: "ItemGroups.INGREDIENTS"
+      FOOD: "ItemGroups.FOOD_AND_DRINK"
+      TOOLS: "ItemGroups.TOOLS"
+      COMBAT: "ItemGroups.COMBAT"
+    default: "ItemGroups.BUILDING_BLOCKS"
+
+imports:
+  Block: ["net.minecraft.block.Block"]
+  FabricBlockSettings: ["net.fabricmc.fabric.api.object.builder.v1.block.FabricBlockSettings"]
+  BlockSoundGroup: ["net.minecraft.sound.BlockSoundGroup"]
+  MapColor: ["net.minecraft.block.MapColor"]
+  BlockState: ["net.minecraft.block.BlockState"]
+  ItemGroups: ["net.minecraft.item.ItemGroups"]
+  Item: ["net.minecraft.item.Item"]
+  BlockItem: ["net.minecraft.item.BlockItem"]
+  Registry: ["net.minecraft.registry.Registry", "net.minecraft.registry.Registries"]
+  Identifier: ["net.minecraft.util.Identifier"]
+
+namespaces:
+  block: "net.minecraft.block"
+  item: "net.minecraft.item"
+  registry: "net.minecraft.registry"
+
+templateBasePath: "templates/fabric/1.20.4"

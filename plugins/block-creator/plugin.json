@@ -1,0 +1,13 @@
+{
+  "id": "core.block",
+  "name": "Block Creator",
+  "version": "0.1.0",
+  "description": "Create custom blocks for Minecraft mods",
+  "author": "SoupModMaker Team",
+  "dependencies": [],
+  "minCoreVersion": "0.1.0",
+  "entryPoint": "dist/index.js",
+  "uiComponents": {
+    "editor": "dist/BlockEditor.js"
+  }
+}

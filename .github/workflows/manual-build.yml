@@ -1,0 +1,122 @@
+name: Manual Build
+
+# This workflow can be manually triggered to build executables
+on:
+  workflow_dispatch:
+    inputs:
+      platform:
+        description: 'Platform to build for'
+        required: true
+        type: choice
+        options:
+          - all
+          - windows
+          - mac
+          - linux
+        default: 'all'
+
+jobs:
+  build-windows:
+    name: Build Windows Executable
+    runs-on: windows-latest
+    if: ${{ github.event.inputs.platform == 'windows' || github.event.inputs.platform == 'all' }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm run setup
+
+      - name: Build core
+        run: npm run build:core
+
+      - name: Build Windows executable
+        run: cd electron-app && npm run build
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload Windows artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: SoupModMaker-Windows
+          path: |
+            electron-app/release/*.exe
+          retention-days: 30
+
+  build-mac:
+    name: Build macOS Executable
+    runs-on: macos-latest
+    if: ${{ github.event.inputs.platform == 'mac' || github.event.inputs.platform == 'all' }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm run setup
+
+      - name: Build core
+        run: npm run build:core
+
+      - name: Build macOS executable
+        run: cd electron-app && npm run build
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload macOS artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: SoupModMaker-macOS
+          path: |
+            electron-app/release/*.dmg
+            electron-app/release/*.zip
+          retention-days: 30
+
+  build-linux:
+    name: Build Linux Executable
+    runs-on: ubuntu-latest
+    if: ${{ github.event.inputs.platform == 'linux' || github.event.inputs.platform == 'all' }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm run setup
+
+      - name: Build core
+        run: npm run build:core
+
+      - name: Build Linux executable
+        run: cd electron-app && npm run build
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload Linux artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: SoupModMaker-Linux
+          path: |
+            electron-app/release/*.AppImage
+            electron-app/release/*.deb
+            electron-app/release/*.rpm
+          retention-days: 30

@@ -1,0 +1,162 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "title": "Block",
+  "description": "A custom Minecraft block",
+  "required": ["id", "displayName"],
+  "properties": {
+    "id": {
+      "type": "string",
+      "title": "Block ID",
+      "description": "Unique identifier for this block (lowercase, no spaces)",
+      "pattern": "^[a-z0-9_]+$"
+    },
+    "displayName": {
+      "type": "string",
+      "title": "Display Name",
+      "description": "Human-readable name shown in game"
+    },
+    "material": {
+      "type": "string",
+      "title": "Material",
+      "description": "Base material of the block",
+      "enum": ["STONE", "DIRT", "WOOD", "METAL", "GLASS", "ICE"],
+      "default": "STONE"
+    },
+    "hardness": {
+      "type": "number",
+      "title": "Hardness",
+      "description": "How long it takes to break (0-50)",
+      "minimum": 0,
+      "maximum": 50,
+      "default": 1.5
+    },
+    "resistance": {
+      "type": "number",
+      "title": "Blast Resistance",
+      "description": "Resistance to explosions (0-1200)",
+      "minimum": 0,
+      "maximum": 1200,
+      "default": 6.0
+    },
+    "lightLevel": {
+      "type": "integer",
+      "title": "Light Level",
+      "description": "Light emitted by this block (0-15)",
+      "minimum": 0,
+      "maximum": 15,
+      "default": 0
+    },
+    "soundType": {
+      "type": "string",
+      "title": "Sound Type",
+      "description": "Sound when walking/breaking",
+      "enum": ["STONE", "WOOD", "GRAVEL", "GRASS", "METAL", "GLASS", "WOOL", "SAND"],
+      "default": "STONE"
+    },
+    "hasItem": {
+      "type": "boolean",
+      "title": "Has Item Form",
+      "description": "Whether this block has an item that can be held",
+      "default": true
+    },
+    "creativeTab": {
+      "type": "string",
+      "title": "Creative Tab",
+      "description": "Which creative mode tab to appear in",
+      "enum": [
+        "BUILDING_BLOCKS",
+        "DECORATIONS",
+        "REDSTONE",
+        "TRANSPORTATION",
+        "MISC",
+        "FOOD",
+        "TOOLS",
+        "COMBAT"
+      ],
+      "default": "BUILDING_BLOCKS"
+    },
+    "requiresTool": {
+      "type": "boolean",
+      "title": "Requires Tool",
+      "description": "Whether a tool is required to drop items",
+      "default": false
+    },
+    "toolType": {
+      "type": "string",
+      "title": "Required Tool Type",
+      "description": "Type of tool required if requiresTool is true",
+      "enum": ["PICKAXE", "AXE", "SHOVEL", "HOE", "SWORD", "SHEARS"],
+      "default": "PICKAXE"
+    },
+    "toolTier": {
+      "type": "string",
+      "title": "Tool Tier",
+      "description": "Minimum tool tier required",
+      "enum": ["WOOD", "STONE", "IRON", "GOLD", "DIAMOND", "NETHERITE"],
+      "default": "WOOD"
+    },
+    "textures": {
+      "type": "object",
+      "title": "Textures",
+      "description": "Block textures",
+      "properties": {
+        "all": {
+          "type": "string",
+          "title": "All Sides",
+          "description": "Texture for all sides (if not specified individually)"
+        },
+        "top": {
+          "type": "string",
+          "title": "Top"
+        },
+        "bottom": {
+          "type": "string",
+          "title": "Bottom"
+        },
+        "north": {
+          "type": "string",
+          "title": "North"
+        },
+        "south": {
+          "type": "string",
+          "title": "South"
+        },
+        "east": {
+          "type": "string",
+          "title": "East"
+        },
+        "west": {
+          "type": "string",
+          "title": "West"
+        }
+      }
+    },
+    "drops": {
+      "type": "object",
+      "title": "Drops",
+      "description": "What this block drops when broken",
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": ["SELF", "CUSTOM", "NOTHING"],
+          "default": "SELF"
+        },
+        "itemId": {
+          "type": "string",
+          "title": "Custom Drop Item ID"
+        },
+        "minCount": {
+          "type": "integer",
+          "minimum": 0,
+          "default": 1
+        },
+        "maxCount": {
+          "type": "integer",
+          "minimum": 0,
+          "default": 1
+        }
+      }
+    }
+  }
+}
