@@ -96,10 +96,51 @@ export const MobMaker: React.FC = () => {
     updateMob({ drops: newDrops });
   };
 
-  const saveMob = () => {
-    console.log('Saving mob:', mob);
-    // TODO: Implement actual save functionality
-    alert(`Mob "${mob.name}" saved! (Not implemented yet)`);
+  const saveMob = async () => {
+    if (!mob.name || !mob.id) {
+      alert('Please enter a name and ID for your mob!');
+      return;
+    }
+
+    try {
+      const { ipcRenderer } = window.require('electron');
+      const result = await ipcRenderer.invoke('mob:save', mob);
+
+      if (result.success) {
+        alert(`Mob "${mob.name}" saved successfully!\n\nLocation: ${result.path}`);
+      } else {
+        alert(`Failed to save mob: ${result.error}`);
+      }
+    } catch (error) {
+      console.error('Error saving mob:', error);
+      alert(`Error saving mob: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
+  };
+
+  const exportMob = async () => {
+    if (!mob.name || !mob.id) {
+      alert('Please enter a name and ID for your mob!');
+      return;
+    }
+
+    const modId = prompt('Enter your mod ID (e.g., mymod):');
+    if (!modId) return;
+
+    try {
+      const { ipcRenderer } = window.require('electron');
+      const result = await ipcRenderer.invoke('mob:export', mob, modId);
+
+      if (result.success) {
+        alert(
+          `Mob exported successfully!\n\nLocation: ${result.path}\n\nNote: Java code generation will be added in the next update. For now, the mob data has been saved.`
+        );
+      } else {
+        alert(`Failed to export mob: ${result.error}`);
+      }
+    } catch (error) {
+      console.error('Error exporting mob:', error);
+      alert(`Error exporting mob: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
   };
 
   return (
@@ -109,8 +150,11 @@ export const MobMaker: React.FC = () => {
         <PetsIcon sx={{ fontSize: 40, color: 'primary.main' }} />
         <Typography variant="h4">Mob Maker</Typography>
         <Box sx={{ flexGrow: 1 }} />
+        <Button variant="outlined" onClick={exportMob} sx={{ mr: 1 }}>
+          Export Code
+        </Button>
         <Button variant="contained" startIcon={<SaveIcon />} onClick={saveMob}>
-          Save Mob
+          Save JSON
         </Button>
       </Box>
 

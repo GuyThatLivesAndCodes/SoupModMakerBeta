@@ -262,8 +262,90 @@ ${indent}        ${action.config.speed || 0.1}
 ${indent}    );
 ${indent}}`;
 
+      case 'place_block':
+        return `${indent}event.getLevel().setBlock(
+${indent}    event.getPos(),
+${indent}    Blocks.${this.toBlockConstant(action.config.block || 'minecraft:stone')}.defaultBlockState(),
+${indent}    3
+${indent});`;
+
+      case 'set_weather':
+        const weather = action.config.weather || 'clear';
+        if (weather === 'rain' || weather === 'thunder') {
+          return `${indent}if (event.getLevel() instanceof ServerLevel serverLevel) {
+${indent}    serverLevel.setWeatherParameters(0, ${action.config.duration || 6000}, ${weather === 'rain'}, ${weather === 'thunder'});
+${indent}}`;
+        } else {
+          return `${indent}if (event.getLevel() instanceof ServerLevel serverLevel) {
+${indent}    serverLevel.setWeatherParameters(6000, 0, false, false);
+${indent}}`;
+        }
+
+      case 'set_time':
+        return `${indent}event.getLevel().setDayTime(${action.config.time || 0}L);`;
+
+      case 'kill_entity':
+        return `${indent}if (event.getEntity() instanceof LivingEntity living) {
+${indent}    living.kill();
+${indent}}`;
+
+      case 'remove_effect':
+        return `${indent}if (event.getEntity() instanceof LivingEntity living) {
+${indent}    living.removeEffect(MobEffects.${this.toScreamingSnakeCase(action.config.effect || 'REGENERATION')});
+${indent}}`;
+
+      case 'remove_item':
+        return `${indent}if (event.getEntity() instanceof Player player) {
+${indent}    ItemStack itemToRemove = new ItemStack(Items.${this.toItemConstant(action.config.item)}, ${action.config.count || 1});
+${indent}    player.getInventory().clearOrCountMatchingItems(
+${indent}        stack -> stack.is(Items.${this.toItemConstant(action.config.item)}),
+${indent}        ${action.config.count || 1},
+${indent}        player.inventoryMenu.getCraftSlots()
+${indent}    );
+${indent}}`;
+
+      case 'set_gamemode':
+        return `${indent}if (event.getEntity() instanceof ServerPlayer player) {
+${indent}    player.setGameMode(GameType.${(action.config.gamemode || 'SURVIVAL').toUpperCase()});
+${indent}}`;
+
+      case 'give_experience':
+        return `${indent}if (event.getEntity() instanceof Player player) {
+${indent}    player.giveExperiencePoints(${action.config.amount || 10});
+${indent}}`;
+
+      case 'set_health':
+        return `${indent}if (event.getEntity() instanceof LivingEntity living) {
+${indent}    living.setHealth(${action.config.health || 20.0}f);
+${indent}}`;
+
+      case 'set_food':
+        return `${indent}if (event.getEntity() instanceof Player player) {
+${indent}    player.getFoodData().setFoodLevel(${action.config.food || 20});
+${indent}}`;
+
+      case 'run_command_as_player':
+        return `${indent}if (event.getEntity() instanceof ServerPlayer player) {
+${indent}    player.getServer().getCommands().performPrefixedCommand(
+${indent}        player.createCommandSourceStack(),
+${indent}        "${action.config.command}"
+${indent}    );
+${indent}}`;
+
+      case 'run_console_command':
+        return `${indent}if (event.getLevel() instanceof ServerLevel serverLevel) {
+${indent}    serverLevel.getServer().getCommands().performPrefixedCommand(
+${indent}        serverLevel.getServer().createCommandSourceStack()
+${indent}            .withSuppressedOutput()
+${indent}            .withPermission(4),
+${indent}        "${action.config.command}"
+${indent}    );
+${indent}}`;
+
       default:
-        return `${indent}// TODO: Implement ${action.type}`;
+        // Return a helpful comment for unimplemented action types
+        return `${indent}// Action type '${action.type}' - implement custom logic here
+${indent}// Config: ${JSON.stringify(action.config).replace(/"/g, '\\"')}`;
     }
   }
 

@@ -112,10 +112,51 @@ export const EventCreator: React.FC = () => {
     updateEvent({ actions: newActions });
   };
 
-  const saveEvent = () => {
-    console.log('Saving event:', event);
-    // TODO: Implement actual save functionality
-    alert(`Event "${event.name}" saved! (Not implemented yet)`);
+  const saveEvent = async () => {
+    if (!event.name || !event.id) {
+      alert('Please enter a name and ID for your event!');
+      return;
+    }
+
+    try {
+      const { ipcRenderer } = window.require('electron');
+      const result = await ipcRenderer.invoke('event:save', event);
+
+      if (result.success) {
+        alert(`Event "${event.name}" saved successfully!\n\nLocation: ${result.path}`);
+      } else {
+        alert(`Failed to save event: ${result.error}`);
+      }
+    } catch (error) {
+      console.error('Error saving event:', error);
+      alert(`Error saving event: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
+  };
+
+  const exportEvent = async () => {
+    if (!event.name || !event.id) {
+      alert('Please enter a name and ID for your event!');
+      return;
+    }
+
+    const modId = prompt('Enter your mod ID (e.g., mymod):');
+    if (!modId) return;
+
+    try {
+      const { ipcRenderer } = window.require('electron');
+      const result = await ipcRenderer.invoke('event:export', event, modId);
+
+      if (result.success) {
+        alert(
+          `Event exported successfully!\n\nLocation: ${result.path}\n\nNote: Java code generation will be added in the next update. For now, the event data has been saved.`
+        );
+      } else {
+        alert(`Failed to export event: ${result.error}`);
+      }
+    } catch (error) {
+      console.error('Error exporting event:', error);
+      alert(`Error exporting event: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
   };
 
   const renderConditionConfig = (condition: EventCondition, index: number) => {
@@ -436,8 +477,11 @@ export const EventCreator: React.FC = () => {
         <Button variant="outlined" onClick={() => setShowTemplates(true)} sx={{ mr: 1 }}>
           Templates
         </Button>
+        <Button variant="outlined" onClick={exportEvent} sx={{ mr: 1 }}>
+          Export Code
+        </Button>
         <Button variant="contained" startIcon={<SaveIcon />} onClick={saveEvent}>
-          Save Event
+          Save JSON
         </Button>
       </Box>
 
