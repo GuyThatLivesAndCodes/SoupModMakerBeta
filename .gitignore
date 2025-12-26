@@ -72,3 +72,20 @@ Plugins/**/Intermediate/*
 
 # Cache files for the editor to use
 DerivedDataCache/*
+
+# Node.js
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+
+# Build outputs
+dist/
+dist-electron/
+build/
+release/
+*.tsbuildinfo
+
+# Electron
+out/
