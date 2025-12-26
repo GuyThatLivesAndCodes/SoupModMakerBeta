@@ -217,6 +217,69 @@ ipcMain.handle('event:export', async (_, eventData, modId) => {
   }
 });
 
+// ============ ITEM MANAGEMENT ============
+
+// Save Item
+ipcMain.handle('item:save', async (_, itemData) => {
+  try {
+    const { filePath } = await dialog.showSaveDialog({
+      title: 'Save Item',
+      defaultPath: `${itemData.id}.json`,
+      filters: [
+        { name: 'JSON Files', extensions: ['json'] },
+        { name: 'All Files', extensions: ['*'] },
+      ],
+    });
+
+    if (filePath) {
+      await fs.writeFile(filePath, JSON.stringify(itemData, null, 2), 'utf-8');
+      return { success: true, path: filePath };
+    }
+    return { success: false, error: 'No file selected' };
+  } catch (error) {
+    return { success: false, error: error instanceof Error ? error.message : 'Unknown error' };
+  }
+});
+
+// Generate and Export Item Code
+ipcMain.handle('item:export', async (_, itemData, modId) => {
+  try {
+    const { filePath } = await dialog.showOpenDialog({
+      title: 'Select Export Directory',
+      properties: ['openDirectory', 'createDirectory'],
+    });
+
+    if (filePath && filePath[0]) {
+      const exportDir = filePath[0];
+      const itemName = itemData.id;
+
+      // Create item directory
+      const itemDir = path.join(exportDir, 'items', itemName);
+      await fs.mkdir(itemDir, { recursive: true });
+
+      // Save the item data
+      await fs.writeFile(
+        path.join(itemDir, `${itemName}.json`),
+        JSON.stringify(itemData, null, 2),
+        'utf-8'
+      );
+
+      // Create placeholder for generated files
+      const readmePath = path.join(itemDir, 'README.md');
+      await fs.writeFile(
+        readmePath,
+        `# ${itemData.name}\n\nItem Type: ${itemData.type}\n\nGenerated item class files will be created here.\n\nProperties:\n- Max Stack Size: ${itemData.maxStackSize}\n- Rarity: ${itemData.rarity}\n- Fireproof: ${itemData.fireproof}`,
+        'utf-8'
+      );
+
+      return { success: true, path: itemDir };
+    }
+    return { success: false, error: 'No directory selected' };
+  } catch (error) {
+    return { success: false, error: error instanceof Error ? error.message : 'Unknown error' };
+  }
+});
+
 // ============ PROJECT MANAGEMENT ============
 
 // Create New Project

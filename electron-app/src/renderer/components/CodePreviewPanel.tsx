@@ -22,14 +22,15 @@ import {
   Download as DownloadIcon,
   Close as CloseIcon,
 } from '@mui/icons-material';
-import { MobData, EventData } from '@soupmodmaker/core';
-import { generateMobPreview, generateEventPreview, highlightJava } from '../utils/codeGenerator';
+import { MobData, EventData, ItemData } from '@soupmodmaker/core';
+import { generateMobPreview, generateEventPreview, generateItemPreview, highlightJava } from '../utils/codeGenerator';
 
 interface CodePreviewPanelProps {
   open: boolean;
   onClose: () => void;
   mobData?: MobData;
   eventData?: EventData;
+  itemData?: ItemData;
   modId?: string;
 }
 
@@ -38,6 +39,7 @@ export const CodePreviewPanel: React.FC<CodePreviewPanelProps> = ({
   onClose,
   mobData,
   eventData,
+  itemData,
   modId = 'examplemod',
 }) => {
   const [code, setCode] = useState<string>('');
@@ -52,8 +54,12 @@ export const CodePreviewPanel: React.FC<CodePreviewPanelProps> = ({
       const generated = generateEventPreview(eventData, modId);
       setCode(generated);
       setHighlightedCode(highlightJava(generated));
+    } else if (itemData) {
+      const generated = generateItemPreview(itemData, modId);
+      setCode(generated);
+      setHighlightedCode(highlightJava(generated));
     }
-  }, [mobData, eventData, modId]);
+  }, [mobData, eventData, itemData, modId]);
 
   const handleCopy = () => {
     navigator.clipboard.writeText(code);
@@ -65,6 +71,8 @@ export const CodePreviewPanel: React.FC<CodePreviewPanelProps> = ({
       ? `${mobData.id}Entity.java`
       : eventData
       ? `${eventData.id}Handler.java`
+      : itemData
+      ? `${itemData.id}Item.java`
       : 'code.java';
 
     const blob = new Blob([code], { type: 'text/plain' });

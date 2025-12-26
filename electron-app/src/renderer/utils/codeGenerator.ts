@@ -2,7 +2,7 @@
  * Simple code generation utilities for live preview
  */
 
-import { MobData, EventData } from '@soupmodmaker/core';
+import { MobData, EventData, ItemData } from '@soupmodmaker/core';
 
 /**
  * Generate a simplified version of mob entity class for preview
@@ -134,6 +134,186 @@ function generateActionsPreview(actions: any[]): string {
   return actions.slice(0, 3).map(action =>
     `        // Action: ${action.type} (${JSON.stringify(action.config)})`
   ).join('\n') + (actions.length > 3 ? `\n        // ... and ${actions.length - 3} more actions` : '');
+}
+
+/**
+ * Generate a simplified item class for preview
+ */
+export function generateItemPreview(item: ItemData, modId: string = 'examplemod'): string {
+  const className = item.id.split('_').map(word =>
+    word.charAt(0).toUpperCase() + word.slice(1)
+  ).join('') + 'Item';
+
+  // Basic item
+  if (item.type === 'basic' || item.type === 'fuel') {
+    return `package com.${modId}.item;
+
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.Rarity;
+
+/**
+ * ${item.name}
+ * ${item.description || 'Custom item'}
+ */
+public class ${className} extends Item {
+
+    public ${className}() {
+        super(new Item.Properties()
+            .stacksTo(${item.maxStackSize})
+            .rarity(Rarity.${item.rarity.toUpperCase()})${item.fireproof ? '\n            .fireResistant()' : ''}
+        );
+    }
+}`;
+  }
+
+  // Tool/Weapon
+  if (item.type === 'tool' || item.type === 'weapon') {
+    const toolProps = item.toolProperties!;
+    const toolClass = item.type === 'weapon' ? 'SwordItem' : getToolClass(toolProps.type);
+
+    return `package com.${modId}.item;
+
+import net.minecraft.world.item.*;
+import net.minecraft.world.item.crafting.Ingredient;
+import net.minecraftforge.common.ForgeTier;
+
+/**
+ * ${item.name}
+ * ${item.description || 'Custom tool'}
+ */
+public class ${className} extends ${toolClass} {
+
+    public static final Tier TIER = new ForgeTier(
+        ${toolProps.miningLevel}, // mining level
+        ${toolProps.durability}, // durability
+        ${toolProps.miningSpeed}f, // mining speed
+        ${toolProps.attackDamage}f, // attack damage bonus
+        ${toolProps.enchantability}, // enchantability
+        null, // tag
+        () -> Ingredient.EMPTY // repair material
+    );
+
+    public ${className}() {
+        super(TIER, ${toolProps.attackDamage}, ${toolProps.attackSpeed}f,
+            new Item.Properties()
+                .rarity(Rarity.${item.rarity.toUpperCase()})${item.fireproof ? '\n                .fireResistant()' : ''}
+        );
+    }
+}`;
+  }
+
+  // Armor
+  if (item.type === 'armor') {
+    const armorProps = item.armorProperties!;
+
+    return `package com.${modId}.item;
+
+import net.minecraft.world.item.*;
+import net.minecraft.world.item.crafting.Ingredient;
+import net.minecraft.sounds.SoundEvent;
+import net.minecraft.sounds.SoundEvents;
+
+/**
+ * ${item.name}
+ * ${item.description || 'Custom armor'}
+ */
+public class ${className} extends ArmorItem {
+
+    public static final ArmorMaterial MATERIAL = new ArmorMaterial() {
+        @Override
+        public int getDurabilityForType(ArmorItem.Type type) {
+            return ${armorProps.durability};
+        }
+
+        @Override
+        public int getDefenseForType(ArmorItem.Type type) {
+            return ${armorProps.defense};
+        }
+
+        @Override
+        public int getEnchantmentValue() {
+            return ${armorProps.enchantability};
+        }
+
+        @Override
+        public SoundEvent getEquipSound() {
+            return SoundEvents.ARMOR_EQUIP_GENERIC;
+        }
+
+        @Override
+        public Ingredient getRepairIngredient() {
+            return Ingredient.EMPTY;
+        }
+
+        @Override
+        public String getName() {
+            return "${modId}:${item.id}";
+        }
+
+        @Override
+        public float getToughness() {
+            return ${armorProps.toughness}f;
+        }
+
+        @Override
+        public float getKnockbackResistance() {
+            return ${armorProps.knockbackResistance}f;
+        }
+    };
+
+    public ${className}() {
+        super(MATERIAL, ArmorItem.Type.${armorProps.slot.toUpperCase()},
+            new Item.Properties()
+                .rarity(Rarity.${item.rarity.toUpperCase()})${item.fireproof ? '\n                .fireResistant()' : ''}
+        );
+    }
+}`;
+  }
+
+  // Food
+  if (item.type === 'food') {
+    const foodProps = item.foodProperties!;
+
+    return `package com.${modId}.item;
+
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.Rarity;
+import net.minecraft.world.food.FoodProperties;
+
+/**
+ * ${item.name}
+ * ${item.description || 'Custom food item'}
+ */
+public class ${className} extends Item {
+
+    public static final FoodProperties FOOD = new FoodProperties.Builder()
+        .nutrition(${foodProps.nutrition})
+        .saturationMod(${foodProps.saturation}f)${foodProps.alwaysEdible ? '\n        .alwaysEat()' : ''}${foodProps.fastFood ? '\n        .fast()' : ''}${foodProps.isMeat ? '\n        .meat()' : ''}
+        .build();
+
+    public ${className}() {
+        super(new Item.Properties()
+            .stacksTo(${item.maxStackSize})
+            .rarity(Rarity.${item.rarity.toUpperCase()})
+            .food(FOOD)${item.fireproof ? '\n            .fireResistant()' : ''}
+        );
+    }
+}`;
+  }
+
+  return '// Item type not supported yet';
+}
+
+function getToolClass(toolType: string): string {
+  const classMap: Record<string, string> = {
+    'pickaxe': 'PickaxeItem',
+    'axe': 'AxeItem',
+    'shovel': 'ShovelItem',
+    'hoe': 'HoeItem',
+    'sword': 'SwordItem',
+    'custom': 'Item',
+  };
+  return classMap[toolType] || 'Item';
 }
 
 /**
