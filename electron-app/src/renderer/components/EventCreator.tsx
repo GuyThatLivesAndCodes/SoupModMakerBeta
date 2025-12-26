@@ -30,6 +30,7 @@ import {
   Save as SaveIcon,
   FlashOn as EventIcon,
   ContentCopy as CopyIcon,
+  Code as CodeIcon,
 } from '@mui/icons-material';
 import {
   EventData,
@@ -39,6 +40,7 @@ import {
   MinecraftEventType,
   EVENT_TEMPLATES,
 } from '@soupmodmaker/core';
+import { CodePreviewPanel } from './CodePreviewPanel';
 
 export const EventCreator: React.FC = () => {
   const [event, setEvent] = useState<EventData>({
@@ -48,6 +50,8 @@ export const EventCreator: React.FC = () => {
     createdAt: new Date(),
     modifiedAt: new Date(),
   } as EventData);
+
+  const [codePreviewOpen, setCodePreviewOpen] = useState(false);
 
   const [showTemplates, setShowTemplates] = useState(true);
 
@@ -474,6 +478,14 @@ export const EventCreator: React.FC = () => {
         <EventIcon sx={{ fontSize: 40, color: 'primary.main' }} />
         <Typography variant="h4">Event Creator</Typography>
         <Box sx={{ flexGrow: 1 }} />
+        <Button
+          variant="outlined"
+          startIcon={<CodeIcon />}
+          onClick={() => setCodePreviewOpen(true)}
+          sx={{ mr: 1 }}
+        >
+          View Code
+        </Button>
         <Button variant="outlined" onClick={() => setShowTemplates(true)} sx={{ mr: 1 }}>
           Templates
         </Button>
@@ -708,6 +720,14 @@ export const EventCreator: React.FC = () => {
           </Button>
         </AccordionDetails>
       </Accordion>
+
+      {/* Code Preview Panel */}
+      <CodePreviewPanel
+        open={codePreviewOpen}
+        onClose={() => setCodePreviewOpen(false)}
+        eventData={event}
+        modId="examplemod"
+      />
     </Box>
   );
 };

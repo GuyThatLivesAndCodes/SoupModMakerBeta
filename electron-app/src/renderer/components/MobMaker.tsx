@@ -30,8 +30,10 @@ import {
   ExpandMore as ExpandMoreIcon,
   Save as SaveIcon,
   Pets as PetsIcon,
+  Code as CodeIcon,
 } from '@mui/icons-material';
 import { MobData, DEFAULT_MOB, AIGoal, LootDrop, MobBehavior } from '@soupmodmaker/core';
+import { CodePreviewPanel } from './CodePreviewPanel';
 
 export const MobMaker: React.FC = () => {
   const [mob, setMob] = useState<MobData>({
@@ -41,6 +43,8 @@ export const MobMaker: React.FC = () => {
     createdAt: new Date(),
     modifiedAt: new Date(),
   } as MobData);
+
+  const [codePreviewOpen, setCodePreviewOpen] = useState(false);
 
   const updateMob = (updates: Partial<MobData>) => {
     setMob({ ...mob, ...updates, modifiedAt: new Date() });
@@ -150,6 +154,14 @@ export const MobMaker: React.FC = () => {
         <PetsIcon sx={{ fontSize: 40, color: 'primary.main' }} />
         <Typography variant="h4">Mob Maker</Typography>
         <Box sx={{ flexGrow: 1 }} />
+        <Button
+          variant="outlined"
+          startIcon={<CodeIcon />}
+          onClick={() => setCodePreviewOpen(true)}
+          sx={{ mr: 1 }}
+        >
+          View Code
+        </Button>
         <Button variant="outlined" onClick={exportMob} sx={{ mr: 1 }}>
           Export Code
         </Button>
@@ -488,6 +500,14 @@ export const MobMaker: React.FC = () => {
           </Grid>
         </AccordionDetails>
       </Accordion>
+
+      {/* Code Preview Panel */}
+      <CodePreviewPanel
+        open={codePreviewOpen}
+        onClose={() => setCodePreviewOpen(false)}
+        mobData={mob}
+        modId="examplemod"
+      />
     </Box>
   );
 };
