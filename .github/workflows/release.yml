@@ -35,6 +35,10 @@ jobs:
         with:
           node-version: '18'
 
+      - name: Install 7zip on Windows
+        if: matrix.platform == 'windows'
+        run: choco install 7zip -y
+
       - name: Install dependencies
         run: npm run setup
 
