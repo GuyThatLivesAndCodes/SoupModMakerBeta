@@ -166,7 +166,7 @@
       "owner": "GuyThatLivesAndCodes",
       "repo": "SoupModMakerBeta"
     },
-    "compression": "normal",
-    "asar": true
+    "compression": "store",
+    "asar": false
   }
 }
