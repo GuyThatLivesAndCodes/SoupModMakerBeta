@@ -70,16 +70,12 @@
     "win": {
       "target": [
         {
-          "target": "nsis",
-          "arch": ["x64", "ia32"]
-        },
-        {
           "target": "portable",
           "arch": ["x64"]
         }
       ],
       "icon": "public/icon.ico",
-      "artifactName": "SoupModMaker-Setup-${version}-${arch}.${ext}",
+      "artifactName": "SoupModMaker-${version}-${arch}.${ext}",
       "publisherName": "SoupModMaker Team"
     },
     "nsis": {
