@@ -1,0 +1,75 @@
+# Forge 1.19.2 Version Mapping
+platform: forge
+version: 1.19.2
+loaderVersion: "43.0.0"
+javaVersion: 17
+
+capabilities:
+  block:
+    supported: true
+    capabilities:
+      customProperties: true
+      blockEntities: true
+      directionalBlocks: true
+  item:
+    supported: true
+  recipe:
+    supported: true
+
+mappings:
+  # Block material mappings (1.19.2 still uses Material class)
+  block.material:
+    values:
+      STONE: "Block.Properties.of(Material.STONE).mapColor(MapColor.STONE)"
+      DIRT: "Block.Properties.of(Material.DIRT).mapColor(MapColor.DIRT)"
+      WOOD: "Block.Properties.of(Material.WOOD).mapColor(MapColor.WOOD).ignitedByLava()"
+      METAL: "Block.Properties.of(Material.METAL).mapColor(MapColor.METAL).requiresCorrectToolForDrops()"
+      GLASS: "Block.Properties.of(Material.GLASS).mapColor(MapColor.NONE).noOcclusion()"
+      ICE: "Block.Properties.of(Material.ICE).mapColor(MapColor.ICE).friction(0.98f)"
+    default: "Block.Properties.of(Material.STONE)"
+
+  # Sound type mappings
+  block.soundType:
+    values:
+      STONE: "SoundType.STONE"
+      WOOD: "SoundType.WOOD"
+      GRAVEL: "SoundType.GRAVEL"
+      GRASS: "SoundType.GRASS"
+      METAL: "SoundType.METAL"
+      GLASS: "SoundType.GLASS"
+      WOOL: "SoundType.WOOL"
+      SAND: "SoundType.SAND"
+    default: "SoundType.STONE"
+
+  # Creative mode tab (1.19.2 uses different approach)
+  block.creativeTab:
+    values:
+      BUILDING_BLOCKS: "CreativeModeTab.TAB_BUILDING_BLOCKS"
+      DECORATIONS: "CreativeModeTab.TAB_DECORATIONS"
+      REDSTONE: "CreativeModeTab.TAB_REDSTONE"
+      TRANSPORTATION: "CreativeModeTab.TAB_TRANSPORTATION"
+      MISC: "CreativeModeTab.TAB_MISC"
+      FOOD: "CreativeModeTab.TAB_FOOD"
+      TOOLS: "CreativeModeTab.TAB_TOOLS"
+      COMBAT: "CreativeModeTab.TAB_COMBAT"
+    default: "CreativeModeTab.TAB_BUILDING_BLOCKS"
+
+imports:
+  Block: ["net.minecraft.world.level.block.Block"]
+  Material: ["net.minecraft.world.level.material.Material"]
+  SoundType: ["net.minecraft.world.level.block.SoundType"]
+  MapColor: ["net.minecraft.world.level.material.MapColor"]
+  BlockState: ["net.minecraft.world.level.block.state.BlockState"]
+  CreativeModeTab: ["net.minecraft.world.item.CreativeModeTab"]
+  Item: ["net.minecraft.world.item.Item"]
+  BlockItem: ["net.minecraft.world.item.BlockItem"]
+  DeferredRegister: ["net.minecraftforge.registries.DeferredRegister"]
+  ForgeRegistries: ["net.minecraftforge.registries.ForgeRegistries"]
+  RegistryObject: ["net.minecraftforge.registries.RegistryObject"]
+
+namespaces:
+  block: "net.minecraft.world.level.block"
+  item: "net.minecraft.world.item"
+  registry: "net.minecraftforge.registries"
+
+templateBasePath: "templates/forge/1.19.2"

@@ -1,0 +1,36 @@
+{
+  "name": "soupmodmaker",
+  "version": "0.1.0",
+  "description": "Modern Minecraft Mod & Plugin Creator - Create mods and plugins for multiple versions with ease",
+  "author": "SoupModMaker Team",
+  "license": "MIT",
+  "private": true,
+  "workspaces": [
+    "electron-app",
+    "core",
+    "plugins/*",
+    "generators"
+  ],
+  "scripts": {
+    "setup": "npm install && npm run build:core",
+    "build:core": "npm run build --workspace=core",
+    "dev": "npm run dev --workspace=electron-app",
+    "build": "npm run build --workspace=core && npm run build --workspace=electron-app",
+    "test": "npm run test --workspaces",
+    "lint": "eslint . --ext .ts,.tsx",
+    "format": "prettier --write \"**/*.{ts,tsx,json,md}\""
+  },
+  "devDependencies": {
+    "@types/node": "^20.10.0",
+    "@typescript-eslint/eslint-plugin": "^6.13.0",
+    "@typescript-eslint/parser": "^6.13.0",
+    "eslint": "^8.54.0",
+    "eslint-config-prettier": "^9.0.0",
+    "prettier": "^3.1.0",
+    "typescript": "^5.3.0"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=9.0.0"
+  }
+}
