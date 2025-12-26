@@ -3,7 +3,8 @@
  * These interfaces define the contract for all SoupModMaker plugins
  */
 
-import { JSONSchema7 } from 'json-schema';
+// Type alias for JSON Schema
+export type JSONSchema7 = Record<string, any>;
 
 /**
  * Base plugin interface - all plugins must implement this
