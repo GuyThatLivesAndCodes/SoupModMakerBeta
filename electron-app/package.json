@@ -89,7 +89,8 @@
       ],
       "icon": "public/icon.ico",
       "artifactName": "SoupModMaker-${version}-${arch}.${ext}",
-      "publisherName": "SoupModMaker Team"
+      "publisherName": "SoupModMaker Team",
+      "sign": null
     },
     "nsis": {
       "oneClick": false,
@@ -101,7 +102,8 @@
       "uninstallerIcon": "public/icon.ico",
       "installerHeaderIcon": "public/icon.ico",
       "license": "../LICENSE",
-      "warningsAsErrors": false
+      "warningsAsErrors": false,
+      "sign": null
     },
     "portable": {
       "artifactName": "SoupModMaker-Portable-${version}.exe"
