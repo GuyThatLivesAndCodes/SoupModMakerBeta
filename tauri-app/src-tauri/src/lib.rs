@@ -45,6 +45,7 @@ async fn mob_save(mob_data: Value, app: AppHandle) -> Result<serde_json::Value, 
         .blocking_save_file()
         .ok_or("User cancelled")?
         .as_path()
+        .ok_or("Invalid path")?
         .to_path_buf();
 
     fs::write(&file_path, serde_json::to_string_pretty(&mob_data).unwrap())
@@ -64,6 +65,7 @@ async fn mob_export(mob_data: Value, mod_id: String, app: AppHandle) -> Result<s
         .blocking_pick_folder()
         .ok_or("User cancelled")?
         .as_path()
+        .ok_or("Invalid path")?
         .to_path_buf();
 
     let mob_id = mob_data["id"].as_str().unwrap_or("mob");
@@ -102,6 +104,7 @@ async fn event_save(event_data: Value, app: AppHandle) -> Result<serde_json::Val
         .blocking_save_file()
         .ok_or("User cancelled")?
         .as_path()
+        .ok_or("Invalid path")?
         .to_path_buf();
 
     fs::write(&file_path, serde_json::to_string_pretty(&event_data).unwrap())
@@ -121,6 +124,7 @@ async fn event_export(event_data: Value, mod_id: String, app: AppHandle) -> Resu
         .blocking_pick_folder()
         .ok_or("User cancelled")?
         .as_path()
+        .ok_or("Invalid path")?
         .to_path_buf();
 
     let event_id = event_data["id"].as_str().unwrap_or("event");
@@ -159,6 +163,7 @@ async fn item_save(item_data: Value, app: AppHandle) -> Result<serde_json::Value
         .blocking_save_file()
         .ok_or("User cancelled")?
         .as_path()
+        .ok_or("Invalid path")?
         .to_path_buf();
 
     fs::write(&file_path, serde_json::to_string_pretty(&item_data).unwrap())
@@ -178,6 +183,7 @@ async fn item_export(item_data: Value, mod_id: String, app: AppHandle) -> Result
         .blocking_pick_folder()
         .ok_or("User cancelled")?
         .as_path()
+        .ok_or("Invalid path")?
         .to_path_buf();
 
     let item_id = item_data["id"].as_str().unwrap_or("item");
@@ -216,6 +222,7 @@ async fn recipe_save(recipe_data: Value, app: AppHandle) -> Result<serde_json::V
         .blocking_save_file()
         .ok_or("User cancelled")?
         .as_path()
+        .ok_or("Invalid path")?
         .to_path_buf();
 
     fs::write(&file_path, serde_json::to_string_pretty(&recipe_data).unwrap())
@@ -235,6 +242,7 @@ async fn recipe_export(recipe_data: Value, mod_id: String, app: AppHandle) -> Re
         .blocking_pick_folder()
         .ok_or("User cancelled")?
         .as_path()
+        .ok_or("Invalid path")?
         .to_path_buf();
 
     let recipe_id = recipe_data["id"].as_str().unwrap_or("recipe");
@@ -276,6 +284,7 @@ async fn project_open(app: AppHandle, state: tauri::State<'_, AppState>) -> Resu
         .blocking_pick_file()
         .ok_or("User cancelled")?
         .as_path()
+        .ok_or("Invalid path")?
         .to_path_buf();
 
     let content = fs::read_to_string(&file_path).map_err(|e| e.to_string())?;
@@ -296,6 +305,7 @@ async fn project_save(project_data: Value, app: AppHandle, state: tauri::State<'
         .blocking_save_file()
         .ok_or("User cancelled")?
         .as_path()
+        .ok_or("Invalid path")?
         .to_path_buf();
 
     fs::write(&file_path, serde_json::to_string_pretty(&project_data).unwrap())
@@ -342,6 +352,7 @@ async fn plugin_import(app: AppHandle, state: tauri::State<'_, AppState>) -> Res
         .blocking_pick_file()
         .ok_or("User cancelled")?
         .as_path()
+        .ok_or("Invalid path")?
         .to_path_buf();
 
     let plugin_data = serde_json::json!({
