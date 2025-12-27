@@ -34,6 +34,8 @@ import {
   Palette as CreateIcon,
   MoreVert as MoreIcon,
 } from '@mui/icons-material';
+import { open } from '@tauri-apps/plugin-dialog';
+import { readFile } from '@tauri-apps/plugin-fs';
 
 interface TexturesPanelProps {
   project: any;
@@ -54,6 +56,7 @@ const TexturesPanel: React.FC<TexturesPanelProps> = ({ project, onUpdateProject 
     tags: [] as string[],
     description: '',
     filePath: '',
+    preview: '',
   });
   const [renameDialog, setRenameDialog] = useState<{
     open: boolean;
@@ -61,22 +64,53 @@ const TexturesPanel: React.FC<TexturesPanelProps> = ({ project, onUpdateProject 
     newName: string;
   }>({ open: false, texture: null, newName: '' });
 
+  const handleSelectFile = async () => {
+    try {
+      const selected = await open({
+        multiple: false,
+        filters: [{
+          name: 'Images',
+          extensions: ['png', 'jpg', 'jpeg']
+        }]
+      });
+
+      if (selected && typeof selected === 'string') {
+        // Read the file and create a preview
+        const fileData = await readFile(selected);
+        const blob = new Blob([fileData], { type: 'image/png' });
+        const preview = URL.createObjectURL(blob);
+
+        // Extract filename
+        const fileName = selected.split(/[\\/]/).pop() || 'texture';
+        const nameWithoutExt = fileName.replace(/\.[^/.]+$/, '');
+
+        setUploadData({
+          ...uploadData,
+          filePath: selected,
+          preview,
+          name: uploadData.name || nameWithoutExt,
+        });
+      }
+    } catch (error) {
+      console.error('Error selecting file:', error);
+    }
+  };
+
   const handleUploadTexture = async () => {
-    // TODO: Implement Tauri file picker
-    console.log('Upload texture');
     setAddMenuAnchor(null);
     setUploadDialog(true);
   };
 
   const handleCreateTexture = () => {
-    // TODO: Implement texture creator
-    console.log('Create texture');
     setAddMenuAnchor(null);
     alert('Texture Creator coming soon!');
   };
 
   const handleUploadSubmit = () => {
-    if (!uploadData.name) return;
+    if (!uploadData.name || !uploadData.filePath) {
+      alert('Please select a file and enter a name');
+      return;
+    }
 
     const newTexture = {
       id: `texture_${Date.now()}`,
@@ -84,7 +118,7 @@ const TexturesPanel: React.FC<TexturesPanelProps> = ({ project, onUpdateProject 
       tags: uploadData.tags,
       description: uploadData.description,
       filePath: uploadData.filePath,
-      preview: null, // TODO: Load actual image
+      preview: uploadData.preview,
       createdAt: Date.now(),
     };
 
@@ -97,7 +131,7 @@ const TexturesPanel: React.FC<TexturesPanelProps> = ({ project, onUpdateProject 
     });
 
     setUploadDialog(false);
-    setUploadData({ name: '', tags: [], description: '', filePath: '' });
+    setUploadData({ name: '', tags: [], description: '', filePath: '', preview: '' });
   };
 
   const handleDeleteTexture = (textureId: string) => {
@@ -187,7 +221,13 @@ const TexturesPanel: React.FC<TexturesPanelProps> = ({ project, onUpdateProject 
           <Grid container spacing={2}>
             {textures.map((texture: any) => (
               <Grid item xs={6} key={texture.id}>
-                <Card onContextMenu={(e) => handleContextMenu(e, texture)}>
+                <Card
+                  onContextMenu={(e) => handleContextMenu(e, texture)}
+                  sx={{
+                    cursor: 'pointer',
+                    '&:hover': { boxShadow: 3 }
+                  }}
+                >
                   <CardMedia
                     component="div"
                     sx={{
@@ -266,26 +306,26 @@ const TexturesPanel: React.FC<TexturesPanelProps> = ({ project, onUpdateProject 
             : undefined
         }
       >
-        <MenuItem onClick={() => alert('Texture editor coming soon!')}>
+        <MenuItem onClick={() => { alert('Texture editor coming soon!'); setContextMenu(null); }}>
           <ListItemIcon>
             <EditIcon fontSize="small" />
           </ListItemIcon>
           <ListItemText>Open Editor</ListItemText>
         </MenuItem>
-        <MenuItem onClick={() => handleRenameClick(contextMenu!.texture)}>
+        <MenuItem onClick={() => contextMenu && handleRenameClick(contextMenu.texture)}>
           <ListItemIcon>
             <EditIcon fontSize="small" />
           </ListItemIcon>
           <ListItemText>Rename</ListItemText>
         </MenuItem>
-        <MenuItem onClick={() => handleDuplicateTexture(contextMenu!.texture)}>
+        <MenuItem onClick={() => contextMenu && handleDuplicateTexture(contextMenu.texture)}>
           <ListItemIcon>
             <DuplicateIcon fontSize="small" />
           </ListItemIcon>
           <ListItemText>Duplicate</ListItemText>
         </MenuItem>
         <Divider />
-        <MenuItem onClick={() => handleDeleteTexture(contextMenu!.texture.id)} sx={{ color: 'error.main' }}>
+        <MenuItem onClick={() => contextMenu && handleDeleteTexture(contextMenu.texture.id)} sx={{ color: 'error.main' }}>
           <ListItemIcon>
             <DeleteIcon fontSize="small" color="error" />
           </ListItemIcon>
@@ -298,9 +338,41 @@ const TexturesPanel: React.FC<TexturesPanelProps> = ({ project, onUpdateProject 
         <DialogTitle>Upload Texture</DialogTitle>
         <DialogContent>
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 1 }}>
-            <Button variant="outlined" startIcon={<UploadIcon />} fullWidth>
-              Select Texture File (.png)
+            <Button
+              variant="outlined"
+              startIcon={<UploadIcon />}
+              fullWidth
+              onClick={handleSelectFile}
+            >
+              {uploadData.filePath ? 'Change File' : 'Select Texture File (.png, .jpg)'}
             </Button>
+            {uploadData.preview && (
+              <Box
+                sx={{
+                  width: '100%',
+                  height: 200,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  border: 1,
+                  borderColor: 'divider',
+                  borderRadius: 1,
+                  bgcolor: 'background.default',
+                  backgroundImage: `repeating-conic-gradient(#808080 0% 25%, transparent 0% 50%) 50% / 20px 20px`,
+                }}
+              >
+                <img
+                  src={uploadData.preview}
+                  alt="Preview"
+                  style={{
+                    maxWidth: '100%',
+                    maxHeight: '100%',
+                    objectFit: 'contain',
+                    imageRendering: 'pixelated'
+                  }}
+                />
+              </Box>
+            )}
             <TextField
               fullWidth
               label="Texture Name"
@@ -325,8 +397,11 @@ const TexturesPanel: React.FC<TexturesPanelProps> = ({ project, onUpdateProject 
           </Box>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setUploadDialog(false)}>Cancel</Button>
-          <Button onClick={handleUploadSubmit} variant="contained">
+          <Button onClick={() => {
+            setUploadDialog(false);
+            setUploadData({ name: '', tags: [], description: '', filePath: '', preview: '' });
+          }}>Cancel</Button>
+          <Button onClick={handleUploadSubmit} variant="contained" disabled={!uploadData.filePath || !uploadData.name}>
             Upload
           </Button>
         </DialogActions>
