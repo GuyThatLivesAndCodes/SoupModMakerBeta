@@ -1,6 +1,5 @@
-use tauri::{AppHandle, Manager};
+use tauri::AppHandle;
 use std::fs;
-use std::path::PathBuf;
 use serde_json::Value;
 
 // State management
@@ -37,11 +36,12 @@ fn app_get_platform() -> String {
 // Mob commands
 #[tauri::command]
 async fn mob_save(mob_data: Value, app: AppHandle) -> Result<serde_json::Value, String> {
-    let file_path = tauri_plugin_dialog::DialogExt::save_file(&app)
+    let file_path = app.dialog()
+        .file()
         .set_title("Save Mob")
         .set_file_name(&format!("{}.json", mob_data["id"].as_str().unwrap_or("mob")))
         .add_filter("JSON Files", &["json"])
-        .blocking_pick_file()
+        .blocking_save_file()
         .ok_or("User cancelled")?;
 
     fs::write(&file_path, serde_json::to_string_pretty(&mob_data).unwrap())
@@ -55,7 +55,8 @@ async fn mob_save(mob_data: Value, app: AppHandle) -> Result<serde_json::Value, 
 
 #[tauri::command]
 async fn mob_export(mob_data: Value, mod_id: String, app: AppHandle) -> Result<serde_json::Value, String> {
-    let dir_path = tauri_plugin_dialog::DialogExt::open_file(&app)
+    let dir_path = app.dialog()
+        .file()
         .set_title("Select Export Directory")
         .set_directory(true)
         .blocking_pick_folder()
@@ -89,11 +90,12 @@ async fn mob_export(mob_data: Value, mod_id: String, app: AppHandle) -> Result<s
 // Event commands
 #[tauri::command]
 async fn event_save(event_data: Value, app: AppHandle) -> Result<serde_json::Value, String> {
-    let file_path = tauri_plugin_dialog::DialogExt::save_file(&app)
+    let file_path = app.dialog()
+        .file()
         .set_title("Save Event")
         .set_file_name(&format!("{}.json", event_data["id"].as_str().unwrap_or("event")))
         .add_filter("JSON Files", &["json"])
-        .blocking_pick_file()
+        .blocking_save_file()
         .ok_or("User cancelled")?;
 
     fs::write(&file_path, serde_json::to_string_pretty(&event_data).unwrap())
@@ -107,7 +109,8 @@ async fn event_save(event_data: Value, app: AppHandle) -> Result<serde_json::Val
 
 #[tauri::command]
 async fn event_export(event_data: Value, mod_id: String, app: AppHandle) -> Result<serde_json::Value, String> {
-    let dir_path = tauri_plugin_dialog::DialogExt::open_file(&app)
+    let dir_path = app.dialog()
+        .file()
         .set_title("Select Export Directory")
         .set_directory(true)
         .blocking_pick_folder()
@@ -141,11 +144,12 @@ async fn event_export(event_data: Value, mod_id: String, app: AppHandle) -> Resu
 // Item commands
 #[tauri::command]
 async fn item_save(item_data: Value, app: AppHandle) -> Result<serde_json::Value, String> {
-    let file_path = tauri_plugin_dialog::DialogExt::save_file(&app)
+    let file_path = app.dialog()
+        .file()
         .set_title("Save Item")
         .set_file_name(&format!("{}.json", item_data["id"].as_str().unwrap_or("item")))
         .add_filter("JSON Files", &["json"])
-        .blocking_pick_file()
+        .blocking_save_file()
         .ok_or("User cancelled")?;
 
     fs::write(&file_path, serde_json::to_string_pretty(&item_data).unwrap())
@@ -159,7 +163,8 @@ async fn item_save(item_data: Value, app: AppHandle) -> Result<serde_json::Value
 
 #[tauri::command]
 async fn item_export(item_data: Value, mod_id: String, app: AppHandle) -> Result<serde_json::Value, String> {
-    let dir_path = tauri_plugin_dialog::DialogExt::open_file(&app)
+    let dir_path = app.dialog()
+        .file()
         .set_title("Select Export Directory")
         .set_directory(true)
         .blocking_pick_folder()
@@ -193,11 +198,12 @@ async fn item_export(item_data: Value, mod_id: String, app: AppHandle) -> Result
 // Recipe commands
 #[tauri::command]
 async fn recipe_save(recipe_data: Value, app: AppHandle) -> Result<serde_json::Value, String> {
-    let file_path = tauri_plugin_dialog::DialogExt::save_file(&app)
+    let file_path = app.dialog()
+        .file()
         .set_title("Save Recipe")
         .set_file_name(&format!("{}.json", recipe_data["id"].as_str().unwrap_or("recipe")))
         .add_filter("JSON Files", &["json"])
-        .blocking_pick_file()
+        .blocking_save_file()
         .ok_or("User cancelled")?;
 
     fs::write(&file_path, serde_json::to_string_pretty(&recipe_data).unwrap())
@@ -211,7 +217,8 @@ async fn recipe_save(recipe_data: Value, app: AppHandle) -> Result<serde_json::V
 
 #[tauri::command]
 async fn recipe_export(recipe_data: Value, mod_id: String, app: AppHandle) -> Result<serde_json::Value, String> {
-    let dir_path = tauri_plugin_dialog::DialogExt::open_file(&app)
+    let dir_path = app.dialog()
+        .file()
         .set_title("Select Export Directory")
         .set_directory(true)
         .blocking_pick_folder()
@@ -249,7 +256,8 @@ async fn project_new(project_name: String, state: tauri::State<'_, AppState>) ->
 
 #[tauri::command]
 async fn project_open(app: AppHandle, state: tauri::State<'_, AppState>) -> Result<serde_json::Value, String> {
-    let file_path = tauri_plugin_dialog::DialogExt::open_file(&app)
+    let file_path = app.dialog()
+        .file()
         .set_title("Open Project")
         .add_filter("SoupModMaker Project", &["soup", "json"])
         .blocking_pick_file()
@@ -265,11 +273,12 @@ async fn project_open(app: AppHandle, state: tauri::State<'_, AppState>) -> Resu
 
 #[tauri::command]
 async fn project_save(project_data: Value, app: AppHandle, state: tauri::State<'_, AppState>) -> Result<serde_json::Value, String> {
-    let file_path = tauri_plugin_dialog::DialogExt::save_file(&app)
+    let file_path = app.dialog()
+        .file()
         .set_title("Save Project")
         .set_file_name(&format!("{}.soup", project_data["name"].as_str().unwrap_or("project")))
         .add_filter("SoupModMaker Project", &["soup"])
-        .blocking_pick_file()
+        .blocking_save_file()
         .ok_or("User cancelled")?;
 
     fs::write(&file_path, serde_json::to_string_pretty(&project_data).unwrap())
@@ -309,7 +318,8 @@ fn settings_update(settings: Value, state: tauri::State<'_, AppState>) -> Result
 // Plugin commands
 #[tauri::command]
 async fn plugin_import(app: AppHandle, state: tauri::State<'_, AppState>) -> Result<serde_json::Value, String> {
-    let file_path = tauri_plugin_dialog::DialogExt::open_file(&app)
+    let file_path = app.dialog()
+        .file()
         .set_title("Import Plugin")
         .add_filter("Plugin Files", &["zip", "jar"])
         .blocking_pick_file()
