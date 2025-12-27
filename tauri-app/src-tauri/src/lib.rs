@@ -43,7 +43,9 @@ async fn mob_save(mob_data: Value, app: AppHandle) -> Result<serde_json::Value, 
         .set_file_name(&format!("{}.json", mob_data["id"].as_str().unwrap_or("mob")))
         .add_filter("JSON Files", &["json"])
         .blocking_save_file()
-        .ok_or("User cancelled")?;
+        .ok_or("User cancelled")?
+        .path()
+        .to_path_buf();
 
     fs::write(&file_path, serde_json::to_string_pretty(&mob_data).unwrap())
         .map_err(|e| e.to_string())?;
@@ -59,9 +61,10 @@ async fn mob_export(mob_data: Value, mod_id: String, app: AppHandle) -> Result<s
     let dir_path = app.dialog()
         .file()
         .set_title("Select Export Directory")
-        .set_directory(true)
         .blocking_pick_folder()
-        .ok_or("User cancelled")?;
+        .ok_or("User cancelled")?
+        .path()
+        .to_path_buf();
 
     let mob_id = mob_data["id"].as_str().unwrap_or("mob");
     let class_name = format!("{}Entity", mob_id.split('_').map(|s| {
@@ -97,7 +100,9 @@ async fn event_save(event_data: Value, app: AppHandle) -> Result<serde_json::Val
         .set_file_name(&format!("{}.json", event_data["id"].as_str().unwrap_or("event")))
         .add_filter("JSON Files", &["json"])
         .blocking_save_file()
-        .ok_or("User cancelled")?;
+        .ok_or("User cancelled")?
+        .path()
+        .to_path_buf();
 
     fs::write(&file_path, serde_json::to_string_pretty(&event_data).unwrap())
         .map_err(|e| e.to_string())?;
@@ -113,9 +118,10 @@ async fn event_export(event_data: Value, mod_id: String, app: AppHandle) -> Resu
     let dir_path = app.dialog()
         .file()
         .set_title("Select Export Directory")
-        .set_directory(true)
         .blocking_pick_folder()
-        .ok_or("User cancelled")?;
+        .ok_or("User cancelled")?
+        .path()
+        .to_path_buf();
 
     let event_id = event_data["id"].as_str().unwrap_or("event");
     let class_name = format!("{}EventHandler", event_id.split('_').map(|s| {
@@ -151,7 +157,9 @@ async fn item_save(item_data: Value, app: AppHandle) -> Result<serde_json::Value
         .set_file_name(&format!("{}.json", item_data["id"].as_str().unwrap_or("item")))
         .add_filter("JSON Files", &["json"])
         .blocking_save_file()
-        .ok_or("User cancelled")?;
+        .ok_or("User cancelled")?
+        .path()
+        .to_path_buf();
 
     fs::write(&file_path, serde_json::to_string_pretty(&item_data).unwrap())
         .map_err(|e| e.to_string())?;
@@ -167,9 +175,10 @@ async fn item_export(item_data: Value, mod_id: String, app: AppHandle) -> Result
     let dir_path = app.dialog()
         .file()
         .set_title("Select Export Directory")
-        .set_directory(true)
         .blocking_pick_folder()
-        .ok_or("User cancelled")?;
+        .ok_or("User cancelled")?
+        .path()
+        .to_path_buf();
 
     let item_id = item_data["id"].as_str().unwrap_or("item");
     let class_name = format!("{}Item", item_id.split('_').map(|s| {
@@ -205,7 +214,9 @@ async fn recipe_save(recipe_data: Value, app: AppHandle) -> Result<serde_json::V
         .set_file_name(&format!("{}.json", recipe_data["id"].as_str().unwrap_or("recipe")))
         .add_filter("JSON Files", &["json"])
         .blocking_save_file()
-        .ok_or("User cancelled")?;
+        .ok_or("User cancelled")?
+        .path()
+        .to_path_buf();
 
     fs::write(&file_path, serde_json::to_string_pretty(&recipe_data).unwrap())
         .map_err(|e| e.to_string())?;
@@ -221,9 +232,10 @@ async fn recipe_export(recipe_data: Value, mod_id: String, app: AppHandle) -> Re
     let dir_path = app.dialog()
         .file()
         .set_title("Select Export Directory")
-        .set_directory(true)
         .blocking_pick_folder()
-        .ok_or("User cancelled")?;
+        .ok_or("User cancelled")?
+        .path()
+        .to_path_buf();
 
     let recipe_id = recipe_data["id"].as_str().unwrap_or("recipe");
     let recipe_json = serde_json::to_string_pretty(&recipe_data).unwrap();
@@ -262,7 +274,9 @@ async fn project_open(app: AppHandle, state: tauri::State<'_, AppState>) -> Resu
         .set_title("Open Project")
         .add_filter("SoupModMaker Project", &["soup", "json"])
         .blocking_pick_file()
-        .ok_or("User cancelled")?;
+        .ok_or("User cancelled")?
+        .path()
+        .to_path_buf();
 
     let content = fs::read_to_string(&file_path).map_err(|e| e.to_string())?;
     let project_data: Value = serde_json::from_str(&content).map_err(|e| e.to_string())?;
@@ -280,7 +294,9 @@ async fn project_save(project_data: Value, app: AppHandle, state: tauri::State<'
         .set_file_name(&format!("{}.soup", project_data["name"].as_str().unwrap_or("project")))
         .add_filter("SoupModMaker Project", &["soup"])
         .blocking_save_file()
-        .ok_or("User cancelled")?;
+        .ok_or("User cancelled")?
+        .path()
+        .to_path_buf();
 
     fs::write(&file_path, serde_json::to_string_pretty(&project_data).unwrap())
         .map_err(|e| e.to_string())?;
@@ -324,13 +340,15 @@ async fn plugin_import(app: AppHandle, state: tauri::State<'_, AppState>) -> Res
         .set_title("Import Plugin")
         .add_filter("Plugin Files", &["zip", "jar"])
         .blocking_pick_file()
-        .ok_or("User cancelled")?;
+        .ok_or("User cancelled")?
+        .path()
+        .to_path_buf();
 
     let plugin_data = serde_json::json!({
-        "id": file_path.file_name().unwrap().to_str(),
-        "name": file_path.file_stem().unwrap().to_str(),
+        "id": file_path.file_name().and_then(|n| n.to_str()).unwrap_or("unknown"),
+        "name": file_path.file_stem().and_then(|n| n.to_str()).unwrap_or("unknown"),
         "enabled": true,
-        "path": file_path.to_str()
+        "path": file_path.to_str().unwrap_or("")
     });
 
     state.plugins.lock().unwrap().push(plugin_data.clone());
