@@ -26,6 +26,7 @@ import {
   School as TutorialIcon,
   GitHub as GitHubIcon,
   ArrowBack as BackIcon,
+  Extension as ExtensionIcon,
 } from '@mui/icons-material';
 import { RecentProject } from '@soupmodmaker/core';
 

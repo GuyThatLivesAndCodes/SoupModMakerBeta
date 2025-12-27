@@ -8,3 +8,4 @@ export * from './version';
 export * from './mob';
 export * from './event';
 export * from './item';
+export * from './recipe';
