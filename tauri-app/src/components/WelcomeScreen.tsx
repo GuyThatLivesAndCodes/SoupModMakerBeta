@@ -31,7 +31,7 @@ import {
 import { RecentProject } from '@soupmodmaker/core';
 
 interface WelcomeScreenProps {
-  onNewProject?: () => void;
+  onNewProject?: (templateData?: any) => void;
   onOpenProject?: () => void;
   onProjectSelect?: (path: string) => void;
 }
@@ -51,46 +51,22 @@ const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
 
   const loadRecentProjects = async () => {
     try {
-      const { ipcRenderer } = window.require('electron');
-      const projects = await ipcRenderer.invoke('project:getRecent');
-      setRecentProjects(projects || []);
+      // TODO: Implement recent projects with Tauri store
+      setRecentProjects([]);
     } catch (error) {
       console.error('Error loading recent projects:', error);
     }
   };
 
-  const handleNewProject = async () => {
-    const projectName = prompt('Enter project name:');
-    if (!projectName) return;
-
-    try {
-      const { ipcRenderer } = window.require('electron');
-      const result = await ipcRenderer.invoke('project:new', projectName);
-
-      if (result.success && onProjectSelect) {
-        onProjectSelect(result.path);
-      } else if (result.success && onNewProject) {
-        onNewProject();
-      } else {
-        alert(`Failed to create project: ${result.error}`);
-      }
-    } catch (error) {
-      alert(`Error: ${error instanceof Error ? error.message : 'Unknown error'}`);
+  const handleNewProject = () => {
+    if (onNewProject) {
+      onNewProject();
     }
   };
 
-  const handleOpenProject = async () => {
-    try {
-      const { ipcRenderer } = window.require('electron');
-      const result = await ipcRenderer.invoke('project:open');
-
-      if (result.success && onProjectSelect) {
-        onProjectSelect(result.path);
-      } else if (result.success && onOpenProject) {
-        onOpenProject();
-      }
-    } catch (error) {
-      console.error('Error opening project:', error);
+  const handleOpenProject = () => {
+    if (onOpenProject) {
+      onOpenProject();
     }
   };
 
@@ -345,7 +321,7 @@ const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
 
 interface TemplateGalleryProps {
   onBack: () => void;
-  onSelect: (path: string) => void;
+  onSelect: (templateData: any) => void;
 }
 
 const TemplateGallery: React.FC<TemplateGalleryProps> = ({ onBack, onSelect }) => {
@@ -406,22 +382,138 @@ const TemplateGallery: React.FC<TemplateGalleryProps> = ({ onBack, onSelect }) =
     },
   ];
 
-  const handleUseTemplate = async (template: any) => {
-    const projectName = prompt(`Create project from "${template.name}" template.\n\nEnter project name:`, template.name);
-    if (!projectName) return;
+  const handleUseTemplate = (template: any) => {
+    // Create template data based on template type
+    const templateData = createTemplateData(template);
+    onSelect(templateData);
+  };
 
-    try {
-      const { ipcRenderer } = window.require('electron');
-      const result = await ipcRenderer.invoke('project:new', projectName);
+  const createTemplateData = (template: any) => {
+    const baseTemplate = {
+      id: template.id,
+      name: template.name,
+      platform: template.platform,
+      minecraftVersion: template.minecraftVersion,
+    };
 
-      if (result.success && onSelect) {
-        // TODO: Apply template data to the created project
-        onSelect(result.path);
-      } else {
-        alert(`Failed to create project: ${result.error}`);
-      }
-    } catch (error) {
-      alert(`Error: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    // Create features based on template type
+    switch (template.id) {
+      case 'simple-mod':
+        return {
+          ...baseTemplate,
+          features: [
+            {
+              id: 'feature_example_block',
+              type: 'core.block',
+              name: 'Example Block',
+              enabled: true,
+              data: {
+                material: 'STONE',
+                hardness: 3.0,
+                resistance: 3.0,
+                harvestLevel: 1,
+                harvestTool: 'pickaxe',
+              },
+            },
+            {
+              id: 'feature_example_item',
+              type: 'core.item',
+              name: 'Example Item',
+              enabled: true,
+              data: {
+                maxStackSize: 64,
+                rarity: 'common',
+              },
+            },
+          ],
+          assets: {
+            textures: [],
+            models: [],
+            sounds: [],
+          },
+        };
+
+      case 'rpg-mod':
+        return {
+          ...baseTemplate,
+          features: [
+            {
+              id: 'feature_sword_of_valor',
+              type: 'core.item',
+              name: 'Sword of Valor',
+              enabled: true,
+              data: {
+                maxStackSize: 1,
+                rarity: 'epic',
+                attackDamage: 8,
+                attackSpeed: 1.6,
+              },
+            },
+            {
+              id: 'feature_mana_crystal',
+              type: 'core.item',
+              name: 'Mana Crystal',
+              enabled: true,
+              data: {
+                maxStackSize: 64,
+                rarity: 'rare',
+              },
+            },
+          ],
+          assets: {
+            textures: [],
+            models: [],
+            sounds: [],
+          },
+        };
+
+      case 'food-mod':
+        return {
+          ...baseTemplate,
+          features: [
+            {
+              id: 'feature_golden_apple_pie',
+              type: 'core.item',
+              name: 'Golden Apple Pie',
+              enabled: true,
+              data: {
+                maxStackSize: 16,
+                rarity: 'uncommon',
+                food: {
+                  hunger: 8,
+                  saturation: 12.8,
+                },
+              },
+            },
+            {
+              id: 'feature_cooking_table',
+              type: 'core.block',
+              name: 'Cooking Table',
+              enabled: true,
+              data: {
+                material: 'WOOD',
+                hardness: 2.5,
+                resistance: 2.5,
+              },
+            },
+          ],
+          assets: {
+            textures: [],
+            models: [],
+            sounds: [],
+          },
+        };
+
+      default:
+        return {
+          ...baseTemplate,
+          features: [],
+          assets: {
+            textures: [],
+            models: [],
+            sounds: [],
+          },
+        };
     }
   };
 
@@ -507,9 +599,9 @@ const PluginMarketplace: React.FC<PluginMarketplaceProps> = ({ onBack }) => {
 
   const loadInstalledPlugins = async () => {
     try {
-      const { ipcRenderer } = window.require('electron');
-      const settings = await ipcRenderer.invoke('settings:get');
-      setInstalledPlugins(settings.installedPlugins?.map((p: any) => p.id) || []);
+      // TODO: Implement plugin management with Tauri store
+      // For now, mark built-in plugins as installed
+      setInstalledPlugins(['mob-maker', 'event-creator']);
     } catch (error) {
       console.error('Error loading installed plugins:', error);
     }

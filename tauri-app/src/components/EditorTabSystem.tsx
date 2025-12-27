@@ -65,7 +65,24 @@ const EditorTabSystem: React.FC<EditorTabSystemProps> = ({
         setCurrentTabIndex(openTabs.length);
       }
     }
-  }, [openFeature]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [openFeature?.id]);
+
+  // Close tabs for deleted features
+  React.useEffect(() => {
+    if (!project?.features) return;
+
+    const featureIds = new Set(project.features.map((f: any) => f.id));
+    const validTabs = openTabs.filter((tab) => featureIds.has(tab.id));
+
+    if (validTabs.length !== openTabs.length) {
+      setOpenTabs(validTabs);
+      if (currentTabIndex >= validTabs.length) {
+        setCurrentTabIndex(Math.max(0, validTabs.length - 1));
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [project?.features]);
 
   const handleTabChange = (_event: React.SyntheticEvent, newValue: number) => {
     setCurrentTabIndex(newValue);
