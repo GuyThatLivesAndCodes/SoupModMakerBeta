@@ -12,7 +12,7 @@ import {
 import {
   ViewInAr as FeaturesIcon,
   Image as TexturesIcon,
-  ViewInAr3D as ModelsIcon,
+  Category as ModelsIcon,
   VolumeUp as SoundsIcon,
   Settings as SettingsIcon,
 } from '@mui/icons-material';
