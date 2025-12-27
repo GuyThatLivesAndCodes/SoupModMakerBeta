@@ -32,6 +32,7 @@ interface LeftPanelSystemProps {
   onUpdateFeature: (feature: any) => void;
   onDeleteFeature: (featureId: string) => void;
   onRenameFeature: (featureId: string, newName: string) => void;
+  onDuplicateFeature?: (feature: any) => void;
   onUpdateProject: (project: any) => void;
 }
 
@@ -43,6 +44,7 @@ const LeftPanelSystem: React.FC<LeftPanelSystemProps> = ({
   onUpdateFeature,
   onDeleteFeature,
   onRenameFeature,
+  onDuplicateFeature,
   onUpdateProject,
 }) => {
   const [currentTab, setCurrentTab] = useState(0);
@@ -122,6 +124,7 @@ const LeftPanelSystem: React.FC<LeftPanelSystemProps> = ({
             onAddFeature={onAddFeature}
             onDeleteFeature={onDeleteFeature}
             onRenameFeature={onRenameFeature}
+            onDuplicateFeature={onDuplicateFeature}
           />
         )}
         {currentTab === 1 && (

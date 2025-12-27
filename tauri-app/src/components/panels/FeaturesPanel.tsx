@@ -35,6 +35,7 @@ import {
   Edit as EditIcon,
   Delete as DeleteIcon,
   OpenInNew as OpenIcon,
+  ContentCopy as DuplicateIcon,
 } from '@mui/icons-material';
 
 interface FeaturesPanelProps {
@@ -44,6 +45,7 @@ interface FeaturesPanelProps {
   onAddFeature: (type: string) => void;
   onDeleteFeature: (featureId: string) => void;
   onRenameFeature: (featureId: string, newName: string) => void;
+  onDuplicateFeature?: (feature: any) => void;
 }
 
 // All available features
@@ -113,6 +115,7 @@ const FeaturesPanel: React.FC<FeaturesPanelProps> = ({
   onAddFeature,
   onDeleteFeature,
   onRenameFeature,
+  onDuplicateFeature,
 }) => {
   const [addDialogOpen, setAddDialogOpen] = useState(false);
   const [contextMenu, setContextMenu] = useState<{
@@ -180,6 +183,13 @@ const FeaturesPanel: React.FC<FeaturesPanelProps> = ({
     if (renameDialog.feature) {
       onRenameFeature(renameDialog.feature.id, renameDialog.newName);
       setRenameDialog({ open: false, feature: null, newName: '' });
+    }
+  };
+
+  const handleDuplicate = () => {
+    if (contextMenu && onDuplicateFeature) {
+      onDuplicateFeature(contextMenu.feature);
+      handleCloseContextMenu();
     }
   };
 
@@ -368,6 +378,12 @@ const FeaturesPanel: React.FC<FeaturesPanelProps> = ({
             <EditIcon fontSize="small" />
           </ListItemIcon>
           <ListItemText>Rename</ListItemText>
+        </MenuItem>
+        <MenuItem onClick={handleDuplicate}>
+          <ListItemIcon>
+            <DuplicateIcon fontSize="small" />
+          </ListItemIcon>
+          <ListItemText>Duplicate</ListItemText>
         </MenuItem>
         <Divider />
         <MenuItem onClick={handleDelete} sx={{ color: 'error.main' }}>

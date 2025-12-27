@@ -142,6 +142,26 @@ const App: React.FC = () => {
     });
   };
 
+  const handleDuplicateFeature = (feature: any) => {
+    const duplicated = {
+      ...feature,
+      id: `feature_${Date.now()}`,
+      name: `${feature.name} (Copy)`,
+    };
+
+    setCurrentProject({
+      ...currentProject,
+      features: [...currentProject.features, duplicated],
+      timestamps: {
+        ...currentProject.timestamps,
+        modified: Date.now(),
+      },
+    });
+
+    // Select the duplicated feature
+    setSelectedFeature(duplicated);
+  };
+
   const handleSaveProject = () => {
     // TODO: Implement actual save logic using Tauri
     console.log('Saving project...', currentProject);
@@ -209,6 +229,7 @@ const App: React.FC = () => {
               onUpdateFeature={handleUpdateFeature}
               onDeleteFeature={handleDeleteFeature}
               onRenameFeature={handleRenameFeature}
+              onDuplicateFeature={handleDuplicateFeature}
               onUpdateProject={setCurrentProject}
             />
 
@@ -217,6 +238,7 @@ const App: React.FC = () => {
               project={currentProject}
               onUpdateFeature={handleUpdateFeature}
               openFeature={selectedFeature}
+              deletedFeatureId={selectedFeature?.id}
             />
           </>
         ) : (
