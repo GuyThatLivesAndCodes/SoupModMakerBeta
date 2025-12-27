@@ -102,8 +102,7 @@
       "uninstallerIcon": "public/icon.ico",
       "installerHeaderIcon": "public/icon.ico",
       "license": "../LICENSE",
-      "warningsAsErrors": false,
-      "sign": null
+      "warningsAsErrors": false
     },
     "portable": {
       "artifactName": "SoupModMaker-Portable-${version}.exe"
