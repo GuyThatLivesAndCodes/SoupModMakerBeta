@@ -280,6 +280,69 @@ ipcMain.handle('item:export', async (_, itemData, modId) => {
   }
 });
 
+// ============ RECIPE MANAGEMENT ============
+
+// Save Recipe
+ipcMain.handle('recipe:save', async (_, recipeData) => {
+  try {
+    const { filePath } = await dialog.showSaveDialog({
+      title: 'Save Recipe',
+      defaultPath: `${recipeData.id}.json`,
+      filters: [
+        { name: 'JSON Files', extensions: ['json'] },
+        { name: 'All Files', extensions: ['*'] },
+      ],
+    });
+
+    if (filePath) {
+      await fs.writeFile(filePath, JSON.stringify(recipeData, null, 2), 'utf-8');
+      return { success: true, path: filePath };
+    }
+    return { success: false, error: 'No file selected' };
+  } catch (error) {
+    return { success: false, error: error instanceof Error ? error.message : 'Unknown error' };
+  }
+});
+
+// Generate and Export Recipe Code
+ipcMain.handle('recipe:export', async (_, recipeData, modId) => {
+  try {
+    const { filePath } = await dialog.showOpenDialog({
+      title: 'Select Export Directory',
+      properties: ['openDirectory', 'createDirectory'],
+    });
+
+    if (filePath && filePath[0]) {
+      const exportDir = filePath[0];
+      const recipeName = recipeData.id;
+
+      // Create recipe directory
+      const recipeDir = path.join(exportDir, 'recipes', recipeName);
+      await fs.mkdir(recipeDir, { recursive: true });
+
+      // Save the recipe data
+      await fs.writeFile(
+        path.join(recipeDir, `${recipeName}.json`),
+        JSON.stringify(recipeData, null, 2),
+        'utf-8'
+      );
+
+      // Create placeholder for generated files
+      const readmePath = path.join(recipeDir, 'README.md');
+      await fs.writeFile(
+        readmePath,
+        `# ${recipeData.name}\n\nRecipe Type: ${recipeData.type}\n\nGenerated recipe JSON files will be created here.\n\nResult: ${recipeData.result.item} x${recipeData.result.count}`,
+        'utf-8'
+      );
+
+      return { success: true, path: recipeDir };
+    }
+    return { success: false, error: 'No directory selected' };
+  } catch (error) {
+    return { success: false, error: error instanceof Error ? error.message : 'Unknown error' };
+  }
+});
+
 // ============ PROJECT MANAGEMENT ============
 
 // Create New Project
