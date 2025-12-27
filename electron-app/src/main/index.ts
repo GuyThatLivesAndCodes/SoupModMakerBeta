@@ -119,13 +119,13 @@ ipcMain.handle('mob:save', async (_, mobData) => {
 // Generate and Export Mob Code
 ipcMain.handle('mob:export', async (_, mobData, modId) => {
   try {
-    const { filePath } = await dialog.showOpenDialog({
+    const { filePaths } = await dialog.showOpenDialog({
       title: 'Select Export Directory',
       properties: ['openDirectory', 'createDirectory'],
     });
 
-    if (filePath && filePath[0]) {
-      const exportDir = filePath[0];
+    if (filePaths && filePaths[0]) {
+      const exportDir = filePaths[0];
       const mobName = mobData.id;
 
       // Import and use the generator (we'll need to make this available)
@@ -181,13 +181,13 @@ ipcMain.handle('event:save', async (_, eventData) => {
 // Generate and Export Event Code
 ipcMain.handle('event:export', async (_, eventData, modId) => {
   try {
-    const { filePath } = await dialog.showOpenDialog({
+    const { filePaths } = await dialog.showOpenDialog({
       title: 'Select Export Directory',
       properties: ['openDirectory', 'createDirectory'],
     });
 
-    if (filePath && filePath[0]) {
-      const exportDir = filePath[0];
+    if (filePaths && filePaths[0]) {
+      const exportDir = filePaths[0];
       const eventName = eventData.id;
 
       // Create event directory
@@ -244,13 +244,13 @@ ipcMain.handle('item:save', async (_, itemData) => {
 // Generate and Export Item Code
 ipcMain.handle('item:export', async (_, itemData, modId) => {
   try {
-    const { filePath } = await dialog.showOpenDialog({
+    const { filePaths } = await dialog.showOpenDialog({
       title: 'Select Export Directory',
       properties: ['openDirectory', 'createDirectory'],
     });
 
-    if (filePath && filePath[0]) {
-      const exportDir = filePath[0];
+    if (filePaths && filePaths[0]) {
+      const exportDir = filePaths[0];
       const itemName = itemData.id;
 
       // Create item directory
@@ -307,13 +307,13 @@ ipcMain.handle('recipe:save', async (_, recipeData) => {
 // Generate and Export Recipe Code
 ipcMain.handle('recipe:export', async (_, recipeData, modId) => {
   try {
-    const { filePath } = await dialog.showOpenDialog({
+    const { filePaths } = await dialog.showOpenDialog({
       title: 'Select Export Directory',
       properties: ['openDirectory', 'createDirectory'],
     });
 
-    if (filePath && filePath[0]) {
-      const exportDir = filePath[0];
+    if (filePaths && filePaths[0]) {
+      const exportDir = filePaths[0];
       const recipeName = recipeData.id;
 
       // Create recipe directory
