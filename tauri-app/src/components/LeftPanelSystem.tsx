@@ -22,7 +22,7 @@ import TexturesPanel from './panels/TexturesPanel';
 import ModelsPanel from './panels/ModelsPanel';
 import SoundsPanel from './panels/SoundsPanel';
 import SettingsPanelComponent from './panels/SettingsPanelComponent';
-import SourceFilesPanel from './panels/SourceFilesPanel';
+import SourceFilesPanelReal from './panels/SourceFilesPanelReal';
 
 const PANEL_WIDTH = 320;
 
@@ -156,7 +156,7 @@ const LeftPanelSystem: React.FC<LeftPanelSystemProps> = ({
           />
         )}
         {currentTab === 4 && (
-          <SourceFilesPanel
+          <SourceFilesPanelReal
             project={project}
             onOpenFile={onOpenSourceFile}
           />
