@@ -26,11 +26,19 @@ import {
 
 interface SourceFilesPanelProps {
   project: any;
+  onOpenFile?: (file: { path: string; content: string }) => void;
 }
 
-const SourceFilesPanel: React.FC<SourceFilesPanelProps> = ({ project }) => {
+const SourceFilesPanel: React.FC<SourceFilesPanelProps> = ({ project, onOpenFile }) => {
   const [expandedFolders, setExpandedFolders] = useState<Set<string>>(new Set(['src']));
   const [selectedFile, setSelectedFile] = useState<string | null>(null);
+
+  const handleFileClick = (path: string, content: string) => {
+    setSelectedFile(path);
+    if (onOpenFile) {
+      onOpenFile({ path, content });
+    }
+  };
 
   const toggleFolder = (path: string) => {
     const newExpanded = new Set(expandedFolders);
@@ -316,7 +324,10 @@ forge_version=47.2.0`;
       return (
         <ListItemButton
           key={currentPath}
-          onClick={() => setSelectedFile(currentPath)}
+          onClick={() => {
+            const content = getFileContent(currentPath);
+            handleFileClick(currentPath, content);
+          }}
           selected={selectedFile === currentPath}
           sx={{ pl: (level + 1) * 2 }}
         >

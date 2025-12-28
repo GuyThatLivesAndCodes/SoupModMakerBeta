@@ -36,6 +36,7 @@ interface LeftPanelSystemProps {
   onRenameFeature: (featureId: string, newName: string) => void;
   onDuplicateFeature?: (feature: any) => void;
   onUpdateProject: (project: any) => void;
+  onOpenSourceFile?: (file: { path: string; content: string }) => void;
 }
 
 const LeftPanelSystem: React.FC<LeftPanelSystemProps> = ({
@@ -48,6 +49,7 @@ const LeftPanelSystem: React.FC<LeftPanelSystemProps> = ({
   onRenameFeature,
   onDuplicateFeature,
   onUpdateProject,
+  onOpenSourceFile,
 }) => {
   const [currentTab, setCurrentTab] = useState(0);
 
@@ -156,6 +158,7 @@ const LeftPanelSystem: React.FC<LeftPanelSystemProps> = ({
         {currentTab === 4 && (
           <SourceFilesPanel
             project={project}
+            onOpenFile={onOpenSourceFile}
           />
         )}
         {currentTab === 5 && (

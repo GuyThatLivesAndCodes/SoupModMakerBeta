@@ -13,6 +13,7 @@ import { useAutoSave } from './hooks/useAutoSave';
 const App: React.FC = () => {
   const [currentProject, setCurrentProject] = useState<any>(null);
   const [selectedFeature, setSelectedFeature] = useState<any>(null);
+  const [openSourceFile, setOpenSourceFile] = useState<{ path: string; content: string } | null>(null);
   const [showAutoSaveNotif, setShowAutoSaveNotif] = useState(false);
 
   // Auto-save functionality
@@ -28,6 +29,10 @@ const App: React.FC = () => {
   });
 
   const createNewProject = (projectData?: any) => {
+    // Reset state when creating new project
+    setSelectedFeature(null);
+    setOpenSourceFile(null);
+
     // Create project from wizard data or template data
     const metadata = {
       name: projectData?.name || 'My First Mod',
@@ -224,10 +229,14 @@ const App: React.FC = () => {
         onSaveProject={handleSaveProject}
         onSaveAndClose={() => {
           handleSaveProject();
+          setSelectedFeature(null);
+          setOpenSourceFile(null);
           setCurrentProject(null);
         }}
         onCloseProject={() => {
           // TODO: Check if dirty and show confirmation
+          setSelectedFeature(null);
+          setOpenSourceFile(null);
           setCurrentProject(null);
         }}
         onExport={handleExport}
@@ -257,13 +266,16 @@ const App: React.FC = () => {
               onRenameFeature={handleRenameFeature}
               onDuplicateFeature={handleDuplicateFeature}
               onUpdateProject={setCurrentProject}
+              onOpenSourceFile={setOpenSourceFile}
             />
 
             {/* Editor Tab System */}
             <EditorTabSystem
+              key={currentProject.id}
               project={currentProject}
               onUpdateFeature={handleUpdateFeature}
               openFeature={selectedFeature}
+              openSourceFile={openSourceFile || undefined}
               deletedFeatureId={selectedFeature?.id}
             />
           </>

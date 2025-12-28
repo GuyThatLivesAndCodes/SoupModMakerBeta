@@ -17,14 +17,21 @@ import {
   Restaurant as RecipeIcon,
   Pets as MobIcon,
   EmojiEvents as EventIcon,
+  Code as CodeIcon,
 } from '@mui/icons-material';
 import BlockEditorMultiPage from './editors/BlockEditorMultiPage';
 import ItemEditor from './editors/ItemEditor';
 import RecipeEditor from './editors/RecipeEditor';
+import SourceFileEditor from './editors/SourceFileEditor';
 
 interface EditorTab {
   id: string;
-  feature: any;
+  type: 'feature' | 'source';
+  feature?: any;
+  sourceFile?: {
+    path: string;
+    content: string;
+  };
   isDirty: boolean;
 }
 
@@ -33,6 +40,7 @@ interface EditorTabSystemProps {
   onUpdateFeature: (feature: any) => void;
   onCloseTab?: (featureId: string) => void;
   openFeature?: any;
+  openSourceFile?: { path: string; content: string };
 }
 
 const EditorTabSystem: React.FC<EditorTabSystemProps> = ({
@@ -40,6 +48,7 @@ const EditorTabSystem: React.FC<EditorTabSystemProps> = ({
   onUpdateFeature,
   onCloseTab,
   openFeature,
+  openSourceFile,
 }) => {
   const [openTabs, setOpenTabs] = useState<EditorTab[]>([]);
   const [currentTabIndex, setCurrentTabIndex] = useState(0);
@@ -47,26 +56,58 @@ const EditorTabSystem: React.FC<EditorTabSystemProps> = ({
   // Open a new tab when openFeature changes
   React.useEffect(() => {
     if (openFeature) {
-      const existingTabIndex = openTabs.findIndex(
-        (tab) => tab.id === openFeature.id
-      );
+      setOpenTabs((prevTabs) => {
+        const existingTabIndex = prevTabs.findIndex(
+          (tab) => tab.type === 'feature' && tab.id === openFeature.id
+        );
 
-      if (existingTabIndex >= 0) {
-        // Tab already open, just switch to it
-        setCurrentTabIndex(existingTabIndex);
-      } else {
-        // Open new tab
-        const newTab: EditorTab = {
-          id: openFeature.id,
-          feature: openFeature,
-          isDirty: false,
-        };
-        setOpenTabs([...openTabs, newTab]);
-        setCurrentTabIndex(openTabs.length);
-      }
+        if (existingTabIndex >= 0) {
+          // Tab already open, just switch to it
+          setCurrentTabIndex(existingTabIndex);
+          return prevTabs;
+        } else {
+          // Open new tab
+          const newTab: EditorTab = {
+            id: openFeature.id,
+            type: 'feature',
+            feature: openFeature,
+            isDirty: false,
+          };
+          setCurrentTabIndex(prevTabs.length);
+          return [...prevTabs, newTab];
+        }
+      });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [openFeature?.id]);
+
+  // Open a new tab when openSourceFile changes
+  React.useEffect(() => {
+    if (openSourceFile) {
+      setOpenTabs((prevTabs) => {
+        const existingTabIndex = prevTabs.findIndex(
+          (tab) => tab.type === 'source' && tab.sourceFile?.path === openSourceFile.path
+        );
+
+        if (existingTabIndex >= 0) {
+          // Tab already open, just switch to it
+          setCurrentTabIndex(existingTabIndex);
+          return prevTabs;
+        } else {
+          // Open new tab
+          const newTab: EditorTab = {
+            id: `source_${openSourceFile.path}`,
+            type: 'source',
+            sourceFile: openSourceFile,
+            isDirty: false,
+          };
+          setCurrentTabIndex(prevTabs.length);
+          return [...prevTabs, newTab];
+        }
+      });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [openSourceFile?.path]);
 
   // Close tabs for deleted features
   React.useEffect(() => {
@@ -169,35 +210,58 @@ const EditorTabSystem: React.FC<EditorTabSystemProps> = ({
           variant="scrollable"
           scrollButtons="auto"
         >
-          {openTabs.map((tab, index) => (
-            <Tab
-              key={tab.id}
-              icon={featureIcons[tab.feature.type]}
-              iconPosition="start"
-              label={
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                  <Typography variant="body2">
-                    {tab.feature.name}
-                    {tab.isDirty && ' *'}
-                  </Typography>
-                  <IconButton
-                    size="small"
-                    onClick={(e) => handleCloseTab(index, e)}
-                    sx={{ ml: 0.5, p: 0.25 }}
-                  >
-                    <CloseIcon fontSize="small" />
-                  </IconButton>
-                </Box>
-              }
-              sx={{ textTransform: 'none' }}
-            />
-          ))}
+          {openTabs.map((tab, index) => {
+            const icon = tab.type === 'source'
+              ? <CodeIcon fontSize="small" />
+              : featureIcons[tab.feature?.type || 'core.block'];
+
+            const label = tab.type === 'source'
+              ? tab.sourceFile?.path.split('/').pop() || 'Source File'
+              : tab.feature?.name || 'Untitled';
+
+            return (
+              <Tab
+                key={tab.id}
+                icon={icon}
+                iconPosition="start"
+                label={
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <Typography variant="body2">
+                      {label}
+                      {tab.isDirty && ' *'}
+                    </Typography>
+                    <IconButton
+                      size="small"
+                      onClick={(e) => handleCloseTab(index, e)}
+                      sx={{ ml: 0.5, p: 0.25 }}
+                    >
+                      <CloseIcon fontSize="small" />
+                    </IconButton>
+                  </Box>
+                }
+                sx={{ textTransform: 'none' }}
+              />
+            );
+          })}
         </Tabs>
       </Box>
 
       {/* Tab Content */}
       <Box sx={{ flex: 1, overflow: 'hidden' }}>
-        {currentTab && renderEditor(currentTab.feature, project, handleFeatureUpdate, handleSaveAndClose)}
+        {currentTab && (
+          currentTab.type === 'source' && currentTab.sourceFile ? (
+            <SourceFileEditor
+              filePath={currentTab.sourceFile.path}
+              content={currentTab.sourceFile.content}
+              onEnableEdit={(path) => {
+                console.log('Editing enabled for:', path);
+                // TODO: Mark file as manually edited in project settings
+              }}
+            />
+          ) : currentTab.feature ? (
+            renderEditor(currentTab.feature, project, handleFeatureUpdate, handleSaveAndClose)
+          ) : null
+        )}
       </Box>
     </Box>
   );
