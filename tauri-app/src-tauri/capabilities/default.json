@@ -15,7 +15,7 @@
     "fs:allow-write-text-file",
     "fs:allow-read-text-file",
     "fs:allow-read-dir",
-    "fs:allow-create-dir",
+    "fs:allow-mkdir",
     "fs:allow-exists",
     "fs:allow-stat",
     "fs:default"
