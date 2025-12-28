@@ -4,11 +4,19 @@
 
 import React, { useState } from 'react';
 import { Box, Snackbar, Alert } from '@mui/material';
+import { join } from '@tauri-apps/api/path';
+import { open } from '@tauri-apps/plugin-dialog';
 import EnhancedToolbar from './components/EnhancedToolbar';
 import LeftPanelSystem from './components/LeftPanelSystem';
 import EditorTabSystem from './components/EditorTabSystem';
 import WelcomeScreen from './components/WelcomeScreen';
 import { useAutoSave } from './hooks/useAutoSave';
+import {
+  createProjectOnDisk,
+  loadProjectFromDisk,
+  saveProjectToDisk,
+  ProjectData,
+} from './utils/projectFileSystem';
 
 const App: React.FC = () => {
   const [currentProject, setCurrentProject] = useState<any>(null);
@@ -28,64 +36,86 @@ const App: React.FC = () => {
     },
   });
 
-  const createNewProject = (projectData?: any) => {
+  const createNewProject = async (projectData?: any) => {
     // Reset state when creating new project
     setSelectedFeature(null);
     setOpenSourceFile(null);
 
-    // Create project from wizard data or template data
-    const metadata = {
-      name: projectData?.name || 'My First Mod',
-      modId: projectData?.modId || 'myfirstmod',
-      namespace: projectData?.namespace || 'myfirstmod',
-      description: projectData?.description || '',
-      version: projectData?.version || '1.0.0',
-      authors: projectData?.authors || ['You'],
-    };
+    try {
+      // Create project from wizard data or template data
+      const metadata = {
+        name: projectData?.name || 'My First Mod',
+        modId: projectData?.modId || 'myfirstmod',
+        namespace: projectData?.namespace || 'myfirstmod',
+        description: projectData?.description || '',
+        version: projectData?.version || '1.0.0',
+        authors: projectData?.authors || ['You'],
+        platform: projectData?.platform || 'forge',
+        minecraftVersion: projectData?.minecraftVersion || '1.20.4',
+      };
 
-    const platform = projectData?.platform || 'forge';
-    const minecraftVersion = projectData?.minecraftVersion || '1.20.4';
+      const platform = projectData?.platform || 'forge';
+      const minecraftVersion = projectData?.minecraftVersion || '1.20.4';
 
-    setCurrentProject({
-      id: `project_${Date.now()}`,
-      metadata,
-      features: projectData?.features || [],
-      targets: [
-        {
-          platform,
-          minecraftVersion,
-          primary: true
+      const newProject: ProjectData = {
+        id: `project_${Date.now()}`,
+        metadata,
+        features: projectData?.features || [],
+        targets: [
+          {
+            platform,
+            minecraftVersion,
+            primary: true
+          },
+        ],
+        assets: projectData?.assets || {
+          textures: [],
+          models: [],
+          sounds: [],
         },
-      ],
-      assets: projectData?.assets || {
-        textures: [],
-        models: [],
-        sounds: [],
-      },
-      plugins: [],
-      settings: {
-        javaVersion: 17,
-        build: {
-          outputDir: 'build',
-          includeSources: false,
-          obfuscate: false,
+        plugins: [],
+        settings: {
+          javaVersion: 17,
+          build: {
+            outputDir: 'build',
+            includeSources: false,
+            obfuscate: false,
+          },
+          development: {
+            hotReload: false,
+            debug: true,
+            autoSave: true,
+          },
+          export: {
+            platform,
+            autoIncrementVersion: false,
+            includeJavadocs: false,
+          },
         },
-        development: {
-          hotReload: false,
-          debug: true,
-          autoSave: true,
+        timestamps: {
+          created: Date.now(),
+          modified: Date.now(),
         },
-        export: {
-          platform,
-          autoIncrementVersion: false,
-          includeJavadocs: false,
-        },
-      },
-      timestamps: {
-        created: Date.now(),
-        modified: Date.now(),
-      },
-    });
+        manuallyEditedFiles: [],
+      };
+
+      // Create project directory path
+      if (projectData?.projectPath) {
+        const projectDirName = metadata.name.replace(/\s+/g, '');
+        const projectPath = await join(projectData.projectPath, projectDirName);
+        newProject.projectPath = projectPath;
+
+        // Create project files on disk
+        await createProjectOnDisk(projectPath, newProject);
+
+        alert(`Project created successfully at:\n${projectPath}`);
+      }
+
+      setCurrentProject(newProject);
+    } catch (error) {
+      console.error('Error creating project:', error);
+      alert(`Failed to create project: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
   };
 
   const handleAddFeature = (type: string) => {
@@ -178,10 +208,45 @@ const App: React.FC = () => {
     setSelectedFeature(duplicated);
   };
 
-  const handleSaveProject = () => {
-    // TODO: Implement actual save logic using Tauri
-    console.log('Saving project...', currentProject);
-    setShowAutoSaveNotif(true);
+  const handleSaveProject = async () => {
+    if (!currentProject) return;
+
+    try {
+      if (currentProject.projectPath) {
+        await saveProjectToDisk(currentProject);
+        setShowAutoSaveNotif(true);
+        console.log('Project saved successfully');
+      } else {
+        console.warn('Project has no path - cannot save to disk');
+      }
+    } catch (error) {
+      console.error('Error saving project:', error);
+      alert(`Failed to save project: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
+  };
+
+  const handleOpenProject = async () => {
+    try {
+      const selected = await open({
+        directory: true,
+        multiple: false,
+        title: 'Open SoupModMaker Project',
+      });
+
+      if (selected && typeof selected === 'string') {
+        // Reset state
+        setSelectedFeature(null);
+        setOpenSourceFile(null);
+
+        // Load project from disk
+        const loadedProject = await loadProjectFromDisk(selected);
+        setCurrentProject(loadedProject);
+        alert(`Project loaded successfully from:\n${selected}`);
+      }
+    } catch (error) {
+      console.error('Error opening project:', error);
+      alert(`Failed to open project: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
   };
 
   const handleUpdateMetadata = (metadata: any) => {
@@ -221,14 +286,10 @@ const App: React.FC = () => {
       <EnhancedToolbar
         currentProject={currentProject}
         onNewProject={createNewProject}
-        onOpenProject={() => {
-          // TODO: Implement open project
-          alert('Open Project functionality coming soon!\n\nThis will allow you to browse and open existing projects.');
-          console.log('Open project');
-        }}
+        onOpenProject={handleOpenProject}
         onSaveProject={handleSaveProject}
-        onSaveAndClose={() => {
-          handleSaveProject();
+        onSaveAndClose={async () => {
+          await handleSaveProject();
           setSelectedFeature(null);
           setOpenSourceFile(null);
           setCurrentProject(null);

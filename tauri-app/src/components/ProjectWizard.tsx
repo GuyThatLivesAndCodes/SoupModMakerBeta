@@ -22,6 +22,8 @@ import {
   Chip,
   Alert,
 } from '@mui/material';
+import { FolderOpen as FolderIcon } from '@mui/icons-material';
+import { open } from '@tauri-apps/plugin-dialog';
 
 interface ProjectWizardProps {
   open: boolean;
@@ -31,6 +33,7 @@ interface ProjectWizardProps {
 
 const ProjectWizard: React.FC<ProjectWizardProps> = ({ open, onClose, onCreate }) => {
   const [activeStep, setActiveStep] = useState(0);
+  const [projectPath, setProjectPath] = useState<string>('');
   const [projectData, setProjectData] = useState({
     name: '',
     modId: '',
@@ -41,6 +44,22 @@ const ProjectWizard: React.FC<ProjectWizardProps> = ({ open, onClose, onCreate }
     platform: 'forge',
     minecraftVersion: '1.20.4',
   });
+
+  const handleSelectDirectory = async () => {
+    try {
+      const selected = await open({
+        directory: true,
+        multiple: false,
+        title: 'Select Project Location',
+      });
+
+      if (selected && typeof selected === 'string') {
+        setProjectPath(selected);
+      }
+    } catch (error) {
+      console.error('Error selecting directory:', error);
+    }
+  };
 
   const steps = ['Project Details', 'Platform Selection', 'Review'];
 
@@ -61,6 +80,7 @@ const ProjectWizard: React.FC<ProjectWizardProps> = ({ open, onClose, onCreate }
         authors: authorsArray.length > 0 ? authorsArray : ['You'],
         platform: projectData.platform,
         minecraftVersion: projectData.minecraftVersion,
+        projectPath,
       });
       handleClose();
     } else {
@@ -74,6 +94,7 @@ const ProjectWizard: React.FC<ProjectWizardProps> = ({ open, onClose, onCreate }
 
   const handleClose = () => {
     setActiveStep(0);
+    setProjectPath('');
     setProjectData({
       name: '',
       modId: '',
@@ -89,7 +110,7 @@ const ProjectWizard: React.FC<ProjectWizardProps> = ({ open, onClose, onCreate }
 
   const canProceed = () => {
     if (activeStep === 0) {
-      return projectData.name.trim().length > 0;
+      return projectData.name.trim().length > 0 && projectPath.length > 0;
     }
     return true;
   };
@@ -99,6 +120,18 @@ const ProjectWizard: React.FC<ProjectWizardProps> = ({ open, onClose, onCreate }
       case 0:
         return (
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 2 }}>
+            <Alert severity="info">
+              Choose where to save your project files
+            </Alert>
+            <Button
+              variant="outlined"
+              startIcon={<FolderIcon />}
+              onClick={handleSelectDirectory}
+              fullWidth
+              sx={{ justifyContent: 'flex-start', py: 1.5 }}
+            >
+              {projectPath || 'Select Project Location'}
+            </Button>
             <TextField
               fullWidth
               label="Project Name"

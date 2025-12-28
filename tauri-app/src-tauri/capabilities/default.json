@@ -7,11 +7,15 @@
   ],
   "permissions": [
     "core:default",
+    "core:path:default",
     "dialog:allow-open",
     "dialog:allow-save",
     "fs:allow-read-file",
     "fs:allow-write-file",
+    "fs:allow-write-text-file",
+    "fs:allow-read-text-file",
     "fs:allow-read-dir",
+    "fs:allow-create-dir",
     "fs:allow-exists",
     "fs:default"
   ]
