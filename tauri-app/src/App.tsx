@@ -3,7 +3,17 @@
  */
 
 import React, { useState } from 'react';
-import { Box, Snackbar, Alert } from '@mui/material';
+import {
+  Box,
+  Snackbar,
+  Alert,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogContentText,
+  DialogActions,
+  Button,
+} from '@mui/material';
 import { join } from '@tauri-apps/api/path';
 import { open } from '@tauri-apps/plugin-dialog';
 import EnhancedToolbar from './components/EnhancedToolbar';
@@ -17,12 +27,22 @@ import {
   saveProjectToDisk,
   ProjectData,
 } from './utils/projectFileSystem';
+import {
+  detectExternalEdits,
+  syncAllFeaturesFromDisk,
+  checkFeatureModified,
+  syncFeatureFromDisk,
+} from './utils/externalEditDetection';
 
 const App: React.FC = () => {
   const [currentProject, setCurrentProject] = useState<any>(null);
   const [selectedFeature, setSelectedFeature] = useState<any>(null);
   const [openSourceFile, setOpenSourceFile] = useState<{ path: string; content: string } | null>(null);
   const [showAutoSaveNotif, setShowAutoSaveNotif] = useState(false);
+  const [externalEditDialog, setExternalEditDialog] = useState<{
+    open: boolean;
+    modifiedFiles: string[];
+  }>({ open: false, modifiedFiles: [] });
 
   // Auto-save functionality
   const { lastSaved, isSaving } = useAutoSave(currentProject, {
@@ -208,6 +228,51 @@ const App: React.FC = () => {
     setSelectedFeature(duplicated);
   };
 
+  const handleSelectFeature = async (feature: any) => {
+    if (!currentProject) {
+      setSelectedFeature(feature);
+      return;
+    }
+
+    try {
+      // Check if this specific feature has been modified externally
+      const isModified = await checkFeatureModified(currentProject, feature);
+      if (isModified) {
+        // Sync the feature from disk
+        const syncedFeature = await syncFeatureFromDisk(currentProject, feature);
+        if (syncedFeature) {
+          // Update the feature in the project
+          const updatedFeatures = currentProject.features.map((f: any) =>
+            f.id === feature.id ? syncedFeature : f
+          );
+
+          setCurrentProject({
+            ...currentProject,
+            features: updatedFeatures,
+            timestamps: {
+              ...currentProject.timestamps,
+              modified: Date.now(),
+            },
+          });
+
+          // Show notification that external changes were detected
+          setExternalEditDialog({
+            open: true,
+            modifiedFiles: [`Feature "${feature.name}" was updated from external edits`],
+          });
+
+          setSelectedFeature(syncedFeature);
+          return;
+        }
+      }
+    } catch (error) {
+      console.error('Error checking for external edits:', error);
+    }
+
+    // No external changes, just select the feature normally
+    setSelectedFeature(feature);
+  };
+
   const handleSaveProject = async () => {
     if (!currentProject) return;
 
@@ -240,6 +305,22 @@ const App: React.FC = () => {
 
         // Load project from disk
         const loadedProject = await loadProjectFromDisk(selected);
+
+        // Check for external edits
+        const editResult = await detectExternalEdits(loadedProject);
+        if (editResult.hasChanges) {
+          // Show dialog and sync changes
+          setExternalEditDialog({
+            open: true,
+            modifiedFiles: editResult.modifiedFiles,
+          });
+
+          // Sync features from disk
+          const syncedFeatures = await syncAllFeaturesFromDisk(loadedProject);
+          loadedProject.features = syncedFeatures;
+          loadedProject.timestamps.modified = Date.now();
+        }
+
         setCurrentProject(loadedProject);
         alert(`Project loaded successfully from:\n${selected}`);
       }
@@ -320,7 +401,7 @@ const App: React.FC = () => {
             <LeftPanelSystem
               project={currentProject}
               selectedFeature={selectedFeature}
-              onSelectFeature={setSelectedFeature}
+              onSelectFeature={handleSelectFeature}
               onAddFeature={handleAddFeature}
               onUpdateFeature={handleUpdateFeature}
               onDeleteFeature={handleDeleteFeature}
@@ -337,7 +418,6 @@ const App: React.FC = () => {
               onUpdateFeature={handleUpdateFeature}
               openFeature={selectedFeature}
               openSourceFile={openSourceFile || undefined}
-              deletedFeatureId={selectedFeature?.id}
             />
           </>
         ) : (
@@ -367,6 +447,49 @@ const App: React.FC = () => {
           Project saved successfully
         </Alert>
       </Snackbar>
+
+      {/* External edit notification dialog */}
+      <Dialog
+        open={externalEditDialog.open}
+        onClose={() => setExternalEditDialog({ open: false, modifiedFiles: [] })}
+        maxWidth="sm"
+        fullWidth
+      >
+        <DialogTitle>External Changes Detected</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            The following files have been modified outside of SoupModMaker and have been synced:
+          </DialogContentText>
+          <Box
+            component="ul"
+            sx={{
+              mt: 2,
+              pl: 2,
+              maxHeight: 200,
+              overflow: 'auto',
+              fontFamily: 'monospace',
+              fontSize: '0.875rem',
+            }}
+          >
+            {externalEditDialog.modifiedFiles.map((file, index) => (
+              <li key={index}>{file}</li>
+            ))}
+          </Box>
+          <DialogContentText sx={{ mt: 2 }}>
+            Changes from external editors have been automatically loaded into SoupModMaker.
+            You can continue working with the updated files.
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button
+            onClick={() => setExternalEditDialog({ open: false, modifiedFiles: [] })}
+            variant="contained"
+            autoFocus
+          >
+            OK
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 };

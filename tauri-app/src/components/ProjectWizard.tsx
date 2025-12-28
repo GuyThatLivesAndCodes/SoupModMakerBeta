@@ -23,7 +23,7 @@ import {
   Alert,
 } from '@mui/material';
 import { FolderOpen as FolderIcon } from '@mui/icons-material';
-import { open } from '@tauri-apps/plugin-dialog';
+import { open as openDialog } from '@tauri-apps/plugin-dialog';
 
 interface ProjectWizardProps {
   open: boolean;
@@ -47,7 +47,7 @@ const ProjectWizard: React.FC<ProjectWizardProps> = ({ open, onClose, onCreate }
 
   const handleSelectDirectory = async () => {
     try {
-      const selected = await open({
+      const selected = await openDialog({
         directory: true,
         multiple: false,
         title: 'Select Project Location',

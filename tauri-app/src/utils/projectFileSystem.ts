@@ -3,7 +3,7 @@
  * Handles reading and writing project files to disk
  */
 
-import { writeTextFile, readTextFile, exists, createDir, readDir } from '@tauri-apps/plugin-fs';
+import { writeTextFile, readTextFile, exists, mkdir, readDir } from '@tauri-apps/plugin-fs';
 import { join, dirname } from '@tauri-apps/api/path';
 
 export interface ProjectMetadata {
@@ -46,7 +46,7 @@ export async function createProjectOnDisk(
 ): Promise<void> {
   try {
     // Create main project directory
-    await createDir(projectPath, { recursive: true });
+    await mkdir(projectPath, { recursive: true });
 
     // Create directory structure
     const directories = [
@@ -61,7 +61,7 @@ export async function createProjectOnDisk(
 
     for (const dir of directories) {
       const fullPath = await join(projectPath, dir);
-      await createDir(fullPath, { recursive: true });
+      await mkdir(fullPath, { recursive: true });
     }
 
     // Write project.json (SoupModMaker metadata)
@@ -168,7 +168,7 @@ async function generateSourceFiles(
     );
 
     if (!manuallyEditedFiles.includes(blockPath)) {
-      await createDir(await dirname(blockPath), { recursive: true });
+      await mkdir(await dirname(blockPath), { recursive: true });
       const blockContent = generateBlockClass(modId, block);
       await writeTextFile(blockPath, blockContent);
     }
@@ -184,7 +184,7 @@ async function generateSourceFiles(
     );
 
     if (!manuallyEditedFiles.includes(itemPath)) {
-      await createDir(await dirname(itemPath), { recursive: true });
+      await mkdir(await dirname(itemPath), { recursive: true });
       const itemContent = generateItemClass(modId, item);
       await writeTextFile(itemPath, itemContent);
     }

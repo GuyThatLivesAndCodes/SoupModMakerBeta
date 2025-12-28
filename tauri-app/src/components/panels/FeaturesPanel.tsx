@@ -48,8 +48,18 @@ interface FeaturesPanelProps {
   onDuplicateFeature?: (feature: any) => void;
 }
 
+// Feature type
+interface AvailableFeature {
+  id: string;
+  name: string;
+  icon: React.ReactNode;
+  category: string;
+  comingSoon: boolean;
+  requiresExporter: string[];
+}
+
 // All available features
-const AVAILABLE_FEATURES = [
+const AVAILABLE_FEATURES: AvailableFeature[] = [
   {
     id: 'core.block',
     name: 'Block',
