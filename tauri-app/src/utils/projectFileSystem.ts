@@ -45,6 +45,20 @@ export async function createProjectOnDisk(
   projectData: ProjectData
 ): Promise<void> {
   try {
+    // Check if project directory already exists
+    const projectExists = await exists(projectPath);
+    if (projectExists) {
+      // Check if it has a project.json
+      const projectJsonPath = await join(projectPath, 'project.json');
+      const projectJsonExists = await exists(projectJsonPath);
+      if (projectJsonExists) {
+        throw new Error(
+          'A project already exists at this location.\n\n' +
+          'Please choose a different name or location, or open the existing project instead.'
+        );
+      }
+    }
+
     // Create main project directory
     await mkdir(projectPath, { recursive: true });
 
@@ -90,15 +104,33 @@ export async function loadProjectFromDisk(projectPath: string): Promise<ProjectD
     const projectJsonExists = await exists(projectJsonPath);
 
     if (!projectJsonExists) {
-      throw new Error('project.json not found. This may not be a SoupModMaker project.');
+      throw new Error(
+        'No project.json found in the selected directory.\n\n' +
+        'Make sure you selected a valid SoupModMaker project folder.'
+      );
     }
 
     const projectJson = await readTextFile(projectJsonPath);
-    const projectData: ProjectData = JSON.parse(projectJson);
-    projectData.projectPath = projectPath;
 
-    // Check for manually edited files
-    // TODO: Implement change detection
+    let projectData: ProjectData;
+    try {
+      projectData = JSON.parse(projectJson);
+    } catch (parseError) {
+      throw new Error(
+        'The project.json file is corrupted or invalid.\n\n' +
+        'Please check the file format or try creating a new project.'
+      );
+    }
+
+    // Validate required fields
+    if (!projectData.metadata || !projectData.metadata.name) {
+      throw new Error(
+        'The project.json file is missing required metadata.\n\n' +
+        'This may not be a valid SoupModMaker project.'
+      );
+    }
+
+    projectData.projectPath = projectPath;
 
     return projectData;
   } catch (error) {

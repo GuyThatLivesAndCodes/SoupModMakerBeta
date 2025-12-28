@@ -43,6 +43,12 @@ const App: React.FC = () => {
     open: boolean;
     modifiedFiles: string[];
   }>({ open: false, modifiedFiles: [] });
+  const [errorDialog, setErrorDialog] = useState<{
+    open: boolean;
+    title: string;
+    message: string;
+    details?: string;
+  }>({ open: false, title: '', message: '', details: '' });
 
   // Auto-save functionality
   const { lastSaved, isSaving } = useAutoSave(currentProject, {
@@ -53,8 +59,20 @@ const App: React.FC = () => {
     },
     onSaveError: (error) => {
       console.error('Auto-save failed:', error);
+      showError('Auto-save Failed', 'Failed to automatically save your project.', error);
     },
   });
+
+  // Helper to show error dialog
+  const showError = (title: string, message: string, details?: any) => {
+    console.error(`${title}:`, message, details);
+    setErrorDialog({
+      open: true,
+      title,
+      message,
+      details: details ? (typeof details === 'string' ? details : (details instanceof Error ? details.message : JSON.stringify(details, null, 2))) : undefined,
+    });
+  };
 
   const createNewProject = async (projectData?: any) => {
     // Reset state when creating new project
@@ -128,13 +146,16 @@ const App: React.FC = () => {
         // Create project files on disk
         await createProjectOnDisk(projectPath, newProject);
 
-        alert(`Project created successfully at:\n${projectPath}`);
+        console.log(`Project created successfully at: ${projectPath}`);
       }
 
       setCurrentProject(newProject);
     } catch (error) {
-      console.error('Error creating project:', error);
-      alert(`Failed to create project: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      showError(
+        'Failed to Create Project',
+        'An error occurred while creating your project.',
+        error
+      );
     }
   };
 
@@ -266,7 +287,11 @@ const App: React.FC = () => {
         }
       }
     } catch (error) {
-      console.error('Error checking for external edits:', error);
+      showError(
+        'Failed to Check External Edits',
+        `Could not check if feature "${feature.name}" was modified externally.`,
+        error
+      );
     }
 
     // No external changes, just select the feature normally
@@ -282,11 +307,18 @@ const App: React.FC = () => {
         setShowAutoSaveNotif(true);
         console.log('Project saved successfully');
       } else {
-        console.warn('Project has no path - cannot save to disk');
+        showError(
+          'Cannot Save Project',
+          'This project does not have a file location. Please create a new project with a location or open an existing project.',
+          'Missing projectPath'
+        );
       }
     } catch (error) {
-      console.error('Error saving project:', error);
-      alert(`Failed to save project: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      showError(
+        'Failed to Save Project',
+        'An error occurred while saving your project.',
+        error
+      );
     }
   };
 
@@ -322,11 +354,14 @@ const App: React.FC = () => {
         }
 
         setCurrentProject(loadedProject);
-        alert(`Project loaded successfully from:\n${selected}`);
+        console.log(`Project loaded successfully from: ${selected}`);
       }
     } catch (error) {
-      console.error('Error opening project:', error);
-      alert(`Failed to open project: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      showError(
+        'Failed to Open Project',
+        'Could not open the selected project. Make sure the project folder contains a valid project.json file.',
+        error
+      );
     }
   };
 
@@ -423,10 +458,7 @@ const App: React.FC = () => {
         ) : (
           <WelcomeScreen
             onNewProject={createNewProject}
-            onOpenProject={() => {
-              // TODO: Implement open project
-              console.log('Open project');
-            }}
+            onOpenProject={handleOpenProject}
           />
         )}
       </Box>
@@ -484,6 +516,47 @@ const App: React.FC = () => {
           <Button
             onClick={() => setExternalEditDialog({ open: false, modifiedFiles: [] })}
             variant="contained"
+            autoFocus
+          >
+            OK
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Error dialog */}
+      <Dialog
+        open={errorDialog.open}
+        onClose={() => setErrorDialog({ open: false, title: '', message: '', details: '' })}
+        maxWidth="sm"
+        fullWidth
+      >
+        <DialogTitle sx={{ color: 'error.main' }}>{errorDialog.title}</DialogTitle>
+        <DialogContent>
+          <DialogContentText>{errorDialog.message}</DialogContentText>
+          {errorDialog.details && (
+            <Box
+              sx={{
+                mt: 2,
+                p: 2,
+                bgcolor: 'grey.100',
+                borderRadius: 1,
+                fontFamily: 'monospace',
+                fontSize: '0.75rem',
+                maxHeight: 200,
+                overflow: 'auto',
+                whiteSpace: 'pre-wrap',
+                wordBreak: 'break-word',
+              }}
+            >
+              {errorDialog.details}
+            </Box>
+          )}
+        </DialogContent>
+        <DialogActions>
+          <Button
+            onClick={() => setErrorDialog({ open: false, title: '', message: '', details: '' })}
+            variant="contained"
+            color="primary"
             autoFocus
           >
             OK
