@@ -179,13 +179,26 @@ const App: React.FC = () => {
     setShowAutoSaveNotif(true);
   };
 
+  const handleUpdateMetadata = (metadata: any) => {
+    setCurrentProject({
+      ...currentProject,
+      metadata,
+      timestamps: {
+        ...currentProject.timestamps,
+        modified: Date.now(),
+      },
+    });
+  };
+
   const handleExport = () => {
     // TODO: Implement export logic
+    alert('Export functionality coming soon!\n\nThis will build your mod into a JAR file.');
     console.log('Exporting project...');
   };
 
   const handleExportAndTest = () => {
     // TODO: Implement export and test logic
+    alert('Export & Test functionality coming soon!\n\nThis will build and launch Minecraft with your mod installed for testing.');
     console.log('Exporting and testing...');
   };
 
@@ -205,6 +218,7 @@ const App: React.FC = () => {
         onNewProject={createNewProject}
         onOpenProject={() => {
           // TODO: Implement open project
+          alert('Open Project functionality coming soon!\n\nThis will allow you to browse and open existing projects.');
           console.log('Open project');
         }}
         onSaveProject={handleSaveProject}
@@ -218,6 +232,7 @@ const App: React.FC = () => {
         }}
         onExport={handleExport}
         onExportAndTest={handleExportAndTest}
+        onUpdateMetadata={handleUpdateMetadata}
         isDirty={false}
       />
 

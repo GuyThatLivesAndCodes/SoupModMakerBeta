@@ -24,7 +24,9 @@ import {
   GetApp as ExportIcon,
   MoreVert as MoreIcon,
   FiberManualRecord as DotIcon,
+  Settings as SettingsIcon,
 } from '@mui/icons-material';
+import ProjectMetadataDialog from './ProjectMetadataDialog';
 
 interface EnhancedToolbarProps {
   currentProject: any;
@@ -35,6 +37,7 @@ interface EnhancedToolbarProps {
   onCloseProject: () => void;
   onExport: () => void;
   onExportAndTest: () => void;
+  onUpdateMetadata?: (metadata: any) => void;
   isDirty?: boolean;
 }
 
@@ -47,9 +50,11 @@ const EnhancedToolbar: React.FC<EnhancedToolbarProps> = ({
   onCloseProject,
   onExport,
   onExportAndTest,
+  onUpdateMetadata,
   isDirty = false,
 }) => {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const [showMetadataDialog, setShowMetadataDialog] = useState(false);
 
   const handleMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
@@ -155,6 +160,13 @@ const EnhancedToolbar: React.FC<EnhancedToolbarProps> = ({
           open={Boolean(anchorEl)}
           onClose={handleMenuClose}
         >
+          <MenuItem onClick={() => { setShowMetadataDialog(true); handleMenuClose(); }}>
+            <ListItemIcon>
+              <SettingsIcon fontSize="small" />
+            </ListItemIcon>
+            <ListItemText>Project Settings</ListItemText>
+          </MenuItem>
+          <Divider />
           <MenuItem onClick={() => { onNewProject(); handleMenuClose(); }}>
             <ListItemText>New Project</ListItemText>
           </MenuItem>
@@ -178,6 +190,20 @@ const EnhancedToolbar: React.FC<EnhancedToolbarProps> = ({
             <ListItemText>Export</ListItemText>
           </MenuItem>
         </Menu>
+
+        {/* Project Metadata Dialog */}
+        {currentProject && (
+          <ProjectMetadataDialog
+            open={showMetadataDialog}
+            project={currentProject}
+            onClose={() => setShowMetadataDialog(false)}
+            onSave={(metadata) => {
+              if (onUpdateMetadata) {
+                onUpdateMetadata(metadata);
+              }
+            }}
+          />
+        )}
       </Toolbar>
     </AppBar>
   );
