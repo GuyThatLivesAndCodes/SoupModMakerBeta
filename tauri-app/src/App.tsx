@@ -27,100 +27,60 @@ const App: React.FC = () => {
     },
   });
 
-  const createNewProject = (templateData?: any) => {
-    if (templateData) {
-      // Create project from template
-      setCurrentProject({
-        id: `project_${Date.now()}`,
-        metadata: {
-          name: templateData.name || 'My Mod',
-          modId: (templateData.name || 'mymod').toLowerCase().replace(/\s+/g, ''),
-          namespace: (templateData.name || 'mymod').toLowerCase().replace(/\s+/g, ''),
-          version: '1.0.0',
-          authors: ['You'],
+  const createNewProject = (projectData?: any) => {
+    // Create project from wizard data or template data
+    const metadata = {
+      name: projectData?.name || 'My First Mod',
+      modId: projectData?.modId || 'myfirstmod',
+      namespace: projectData?.namespace || 'myfirstmod',
+      description: projectData?.description || '',
+      version: projectData?.version || '1.0.0',
+      authors: projectData?.authors || ['You'],
+    };
+
+    const platform = projectData?.platform || 'forge';
+    const minecraftVersion = projectData?.minecraftVersion || '1.20.4';
+
+    setCurrentProject({
+      id: `project_${Date.now()}`,
+      metadata,
+      features: projectData?.features || [],
+      targets: [
+        {
+          platform,
+          minecraftVersion,
+          primary: true
         },
-        features: templateData.features || [],
-        targets: [
-          {
-            platform: templateData.platform || 'forge',
-            minecraftVersion: templateData.minecraftVersion || '1.20.4',
-            primary: true
-          },
-        ],
-        assets: templateData.assets || {
-          textures: [],
-          models: [],
-          sounds: [],
+      ],
+      assets: projectData?.assets || {
+        textures: [],
+        models: [],
+        sounds: [],
+      },
+      plugins: [],
+      settings: {
+        javaVersion: 17,
+        build: {
+          outputDir: 'build',
+          includeSources: false,
+          obfuscate: false,
         },
-        plugins: [],
-        settings: {
-          javaVersion: 17,
-          build: {
-            outputDir: 'build',
-            includeSources: false,
-            obfuscate: false,
-          },
-          development: {
-            hotReload: false,
-            debug: true,
-            autoSave: true,
-          },
-          export: {
-            platform: templateData.platform || 'forge',
-            autoIncrementVersion: false,
-            includeJavadocs: false,
-          },
+        development: {
+          hotReload: false,
+          debug: true,
+          autoSave: true,
         },
-        timestamps: {
-          created: Date.now(),
-          modified: Date.now(),
+        export: {
+          platform,
+          autoIncrementVersion: false,
+          includeJavadocs: false,
         },
-      });
-    } else {
-      // Create blank project
-      setCurrentProject({
-        id: `project_${Date.now()}`,
-        metadata: {
-          name: 'My First Mod',
-          modId: 'myfirstmod',
-          namespace: 'myfirstmod',
-          version: '1.0.0',
-          authors: ['You'],
-        },
-        features: [],
-        targets: [
-          { platform: 'forge', minecraftVersion: '1.20.4', primary: true },
-        ],
-        assets: {
-          textures: [],
-          models: [],
-          sounds: [],
-        },
-        plugins: [],
-        settings: {
-          javaVersion: 17,
-          build: {
-            outputDir: 'build',
-            includeSources: false,
-            obfuscate: false,
-          },
-          development: {
-            hotReload: false,
-            debug: true,
-            autoSave: true,
-          },
-          export: {
-            platform: 'forge',
-            autoIncrementVersion: false,
-            includeJavadocs: false,
-          },
-        },
-        timestamps: {
-          created: Date.now(),
-          modified: Date.now(),
-        },
-      });
-    }
+      },
+      timestamps: {
+        created: Date.now(),
+        modified: Date.now(),
+      },
+    });
   };
 
   const handleAddFeature = (type: string) => {

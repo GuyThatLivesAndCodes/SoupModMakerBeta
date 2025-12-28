@@ -29,6 +29,7 @@ import {
   Extension as ExtensionIcon,
 } from '@mui/icons-material';
 import { RecentProject } from '@soupmodmaker/core';
+import ProjectWizard from './ProjectWizard';
 
 interface WelcomeScreenProps {
   onNewProject?: (templateData?: any) => void;
@@ -44,6 +45,7 @@ const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
   const [recentProjects, setRecentProjects] = useState<RecentProject[]>([]);
   const [showTemplates, setShowTemplates] = useState(false);
   const [showMarketplace, setShowMarketplace] = useState(false);
+  const [showWizard, setShowWizard] = useState(false);
 
   useEffect(() => {
     loadRecentProjects();
@@ -59,8 +61,12 @@ const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
   };
 
   const handleNewProject = () => {
+    setShowWizard(true);
+  };
+
+  const handleCreateProject = (projectData: any) => {
     if (onNewProject) {
-      onNewProject();
+      onNewProject(projectData);
     }
   };
 
@@ -98,7 +104,7 @@ const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
   };
 
   if (showTemplates) {
-    return <TemplateGallery onBack={() => setShowTemplates(false)} onSelect={onProjectSelect || (() => {})} />;
+    return <TemplateGallery onBack={() => setShowTemplates(false)} onSelect={handleCreateProject} />;
   }
 
   if (showMarketplace) {
@@ -313,6 +319,13 @@ const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
           Multi-version support • Modern UI • Plugin-based architecture • Free and Open Source
         </Typography>
       </Box>
+
+      {/* Project Creation Wizard */}
+      <ProjectWizard
+        open={showWizard}
+        onClose={() => setShowWizard(false)}
+        onCreate={handleCreateProject}
+      />
     </Box>
   );
 };
@@ -389,9 +402,13 @@ const TemplateGallery: React.FC<TemplateGalleryProps> = ({ onBack, onSelect }) =
   };
 
   const createTemplateData = (template: any) => {
-    const baseTemplate = {
-      id: template.id,
+    const baseData = {
       name: template.name,
+      modId: template.id.replace(/-/g, ''),
+      namespace: template.id.replace(/-/g, ''),
+      description: template.description,
+      version: '1.0.0',
+      authors: ['SoupModMaker Team'],
       platform: template.platform,
       minecraftVersion: template.minecraftVersion,
     };
@@ -400,7 +417,7 @@ const TemplateGallery: React.FC<TemplateGalleryProps> = ({ onBack, onSelect }) =
     switch (template.id) {
       case 'simple-mod':
         return {
-          ...baseTemplate,
+          ...baseData,
           features: [
             {
               id: 'feature_example_block',
@@ -435,7 +452,7 @@ const TemplateGallery: React.FC<TemplateGalleryProps> = ({ onBack, onSelect }) =
 
       case 'rpg-mod':
         return {
-          ...baseTemplate,
+          ...baseData,
           features: [
             {
               id: 'feature_sword_of_valor',
@@ -469,7 +486,7 @@ const TemplateGallery: React.FC<TemplateGalleryProps> = ({ onBack, onSelect }) =
 
       case 'food-mod':
         return {
-          ...baseTemplate,
+          ...baseData,
           features: [
             {
               id: 'feature_golden_apple_pie',
@@ -506,7 +523,7 @@ const TemplateGallery: React.FC<TemplateGalleryProps> = ({ onBack, onSelect }) =
 
       default:
         return {
-          ...baseTemplate,
+          ...baseData,
           features: [],
           assets: {
             textures: [],
