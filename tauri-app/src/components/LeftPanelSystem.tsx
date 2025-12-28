@@ -15,12 +15,14 @@ import {
   Category as ModelsIcon,
   VolumeUp as SoundsIcon,
   Settings as SettingsIcon,
+  Code as CodeIcon,
 } from '@mui/icons-material';
 import FeaturesPanel from './panels/FeaturesPanel';
 import TexturesPanel from './panels/TexturesPanel';
 import ModelsPanel from './panels/ModelsPanel';
 import SoundsPanel from './panels/SoundsPanel';
 import SettingsPanelComponent from './panels/SettingsPanelComponent';
+import SourceFilesPanel from './panels/SourceFilesPanel';
 
 const PANEL_WIDTH = 320;
 
@@ -107,6 +109,12 @@ const LeftPanelSystem: React.FC<LeftPanelSystemProps> = ({
           sx={{ fontSize: '0.75rem' }}
         />
         <Tab
+          icon={<CodeIcon fontSize="small" />}
+          iconPosition="start"
+          label="Source"
+          sx={{ fontSize: '0.75rem' }}
+        />
+        <Tab
           icon={<SettingsIcon fontSize="small" />}
           iconPosition="start"
           label="Settings"
@@ -146,6 +154,11 @@ const LeftPanelSystem: React.FC<LeftPanelSystemProps> = ({
           />
         )}
         {currentTab === 4 && (
+          <SourceFilesPanel
+            project={project}
+          />
+        )}
+        {currentTab === 5 && (
           <SettingsPanelComponent
             project={project}
             onUpdateProject={onUpdateProject}
