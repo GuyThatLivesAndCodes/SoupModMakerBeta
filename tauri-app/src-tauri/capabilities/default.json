@@ -18,6 +18,11 @@
     "fs:allow-mkdir",
     "fs:allow-exists",
     "fs:allow-stat",
-    "fs:default"
+    "fs:default",
+    {
+      "identifier": "fs:scope",
+      "allow": ["**"],
+      "deny": []
+    }
   ]
 }
