@@ -18,6 +18,8 @@
     "fs:allow-mkdir",
     "fs:allow-exists",
     "fs:allow-stat",
-    "fs:default"
+    "fs:default",
+    "fs:read-all",
+    "fs:write-all"
   ]
 }
