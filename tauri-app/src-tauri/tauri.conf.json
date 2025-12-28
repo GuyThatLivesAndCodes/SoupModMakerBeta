@@ -41,5 +41,9 @@
       "nsis": null
     }
   },
-  "plugins": {}
+  "plugins": {
+    "fs": {
+      "scope": ["**"]
+    }
+  }
 }
