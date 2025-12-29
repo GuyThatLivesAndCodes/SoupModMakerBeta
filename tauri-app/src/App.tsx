@@ -417,6 +417,56 @@ const App: React.FC = () => {
       const isWindows = navigator.platform.toLowerCase().includes('win');
       const commandName = isWindows ? 'gradlew-windows' : 'gradlew-unix';
 
+      // Pre-flight checks
+      setBuildConsole((prev) => ({
+        ...prev,
+        output: [...prev.output, 'Checking build prerequisites...'],
+      }));
+
+      // Check if gradlew exists
+      const gradlewFile = isWindows ? 'gradlew.bat' : 'gradlew';
+      const gradlewPath = await join(projectPath, gradlewFile);
+      const gradlewExists = await exists(gradlewPath);
+
+      if (!gradlewExists) {
+        throw new Error(`Gradle wrapper not found: ${gradlewFile}\nPlease recreate the project.`);
+      }
+
+      setBuildConsole((prev) => ({
+        ...prev,
+        output: [...prev.output, `✓ Found ${gradlewFile}`],
+      }));
+
+      // Check if gradle-wrapper.jar exists
+      const wrapperJarPath = await join(projectPath, 'gradle/wrapper/gradle-wrapper.jar');
+      const wrapperJarExists = await exists(wrapperJarPath);
+
+      if (!wrapperJarExists) {
+        throw new Error('gradle-wrapper.jar not found.\nPlease recreate the project.');
+      }
+
+      setBuildConsole((prev) => ({
+        ...prev,
+        output: [...prev.output, '✓ Found gradle-wrapper.jar'],
+      }));
+
+      // Check Java installation
+      try {
+        const javaCheck = Command.create(isWindows ? 'gradlew-windows' : 'gradlew-unix', ['--version'], {
+          cwd: projectPath,
+        });
+        const javaResult = await javaCheck.execute();
+        if (javaResult.code !== 0) {
+          throw new Error('Java not found or not properly configured.\nPlease install Java JDK 17 or later.');
+        }
+        setBuildConsole((prev) => ({
+          ...prev,
+          output: [...prev.output, '✓ Java is available', '', 'Starting build...'],
+        }));
+      } catch (error) {
+        throw new Error('Failed to verify Java installation.\nPlease ensure Java JDK 17+ is installed and in your PATH.');
+      }
+
       // Run Gradle build command using the configured shell command
       const command = Command.create(commandName, ['build'], {
         cwd: projectPath,
