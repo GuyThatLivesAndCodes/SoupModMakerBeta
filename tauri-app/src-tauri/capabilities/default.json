@@ -18,11 +18,31 @@
     "fs:allow-mkdir",
     "fs:allow-exists",
     "fs:allow-stat",
+    "fs:allow-copy-file",
     "fs:default",
+    "shell:allow-execute",
+    "shell:allow-spawn",
     {
       "identifier": "fs:scope",
       "allow": ["**"],
       "deny": []
+    },
+    {
+      "identifier": "shell:allow-execute",
+      "allow": [
+        {
+          "name": "gradlew",
+          "cmd": "gradlew.bat",
+          "args": true,
+          "sidecar": false
+        },
+        {
+          "name": "gradlew-unix",
+          "cmd": "./gradlew",
+          "args": true,
+          "sidecar": false
+        }
+      ]
     }
   ]
 }

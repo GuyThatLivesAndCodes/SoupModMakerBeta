@@ -15,11 +15,14 @@ import {
   Button,
 } from '@mui/material';
 import { join } from '@tauri-apps/api/path';
-import { open } from '@tauri-apps/plugin-dialog';
+import { open, save } from '@tauri-apps/plugin-dialog';
+import { readDir, copyFile } from '@tauri-apps/plugin-fs';
+import { Command } from '@tauri-apps/plugin-shell';
 import EnhancedToolbar from './components/EnhancedToolbar';
 import LeftPanelSystem from './components/LeftPanelSystem';
 import EditorTabSystem from './components/EditorTabSystem';
 import WelcomeScreen from './components/WelcomeScreen';
+import BuildConsole from './components/BuildConsole';
 import { useAutoSave } from './hooks/useAutoSave';
 import {
   createProjectOnDisk,
@@ -49,6 +52,13 @@ const App: React.FC = () => {
     message: string;
     details?: string;
   }>({ open: false, title: '', message: '', details: '' });
+  const [buildConsole, setBuildConsole] = useState<{
+    open: boolean;
+    output: string[];
+    isBuilding: boolean;
+    success: boolean | null;
+    jarPath: string | null;
+  }>({ open: false, output: [], isBuilding: false, success: null, jarPath: null });
 
   // Auto-save functionality
   const { lastSaved, isSaving } = useAutoSave(currentProject, {
@@ -376,10 +386,134 @@ const App: React.FC = () => {
     });
   };
 
-  const handleExport = () => {
-    // TODO: Implement export logic
-    alert('Export functionality coming soon!\n\nThis will build your mod into a JAR file.');
-    console.log('Exporting project...');
+  const handleExport = async () => {
+    if (!currentProject?.projectPath) {
+      showError('Cannot Export', 'No project is currently open.');
+      return;
+    }
+
+    // Save project first
+    try {
+      await handleSaveProject();
+    } catch (error) {
+      showError('Export Failed', 'Failed to save project before building.', error);
+      return;
+    }
+
+    // Open build console
+    setBuildConsole({
+      open: true,
+      output: ['Starting Gradle build...', ''],
+      isBuilding: true,
+      success: null,
+      jarPath: null,
+    });
+
+    try {
+      const projectPath = currentProject.projectPath;
+      const platform = currentProject.metadata.platform || 'forge';
+
+      // Determine the gradle wrapper command based on OS
+      const isWindows = navigator.platform.toLowerCase().includes('win');
+      const gradleCommand = isWindows ? 'gradlew.bat' : './gradlew';
+      const gradleTask = 'build';
+
+      // Run Gradle build command
+      const command = Command.create(gradleCommand, [gradleTask], {
+        cwd: projectPath,
+      });
+
+      // Listen to stdout
+      command.stdout.on('data', (line: string) => {
+        setBuildConsole((prev) => ({
+          ...prev,
+          output: [...prev.output, line],
+        }));
+      });
+
+      // Listen to stderr
+      command.stderr.on('data', (line: string) => {
+        setBuildConsole((prev) => ({
+          ...prev,
+          output: [...prev.output, `ERROR: ${line}`],
+        }));
+      });
+
+      // Execute command
+      const result = await command.execute();
+
+      // Check if build succeeded
+      if (result.code === 0) {
+        // Find the built JAR file
+        const buildLibsPath = await join(projectPath, 'build', 'libs');
+        try {
+          const entries = await readDir(buildLibsPath);
+          const jarFile = entries.find((e) => e.name && e.name.endsWith('.jar'));
+
+          if (jarFile) {
+            const jarPath = await join(buildLibsPath, jarFile.name);
+            setBuildConsole((prev) => ({
+              ...prev,
+              output: [...prev.output, '', '✓ BUILD SUCCESSFUL', `JAR file created: ${jarFile.name}`],
+              isBuilding: false,
+              success: true,
+              jarPath,
+            }));
+          } else {
+            throw new Error('JAR file not found in build/libs directory');
+          }
+        } catch (error) {
+          throw new Error(`Failed to locate JAR file: ${error}`);
+        }
+      } else {
+        setBuildConsole((prev) => ({
+          ...prev,
+          output: [...prev.output, '', '✗ BUILD FAILED', `Exit code: ${result.code}`],
+          isBuilding: false,
+          success: false,
+          jarPath: null,
+        }));
+      }
+    } catch (error) {
+      setBuildConsole((prev) => ({
+        ...prev,
+        output: [...prev.output, '', `✗ ERROR: ${error instanceof Error ? error.message : 'Unknown error'}`],
+        isBuilding: false,
+        success: false,
+        jarPath: null,
+      }));
+      showError('Build Failed', 'An error occurred during the build process.', error);
+    }
+  };
+
+  const handleCopyJar = async () => {
+    if (!buildConsole.jarPath) return;
+
+    try {
+      // Get the JAR filename
+      const jarFilename = buildConsole.jarPath.split(/[\\/]/).pop() || 'mod.jar';
+
+      // Open save dialog
+      const savePath = await save({
+        defaultPath: jarFilename,
+        filters: [{
+          name: 'JAR Files',
+          extensions: ['jar']
+        }]
+      });
+
+      if (savePath) {
+        // Copy JAR to selected location
+        await copyFile(buildConsole.jarPath, savePath);
+        setBuildConsole((prev) => ({
+          ...prev,
+          output: [...prev.output, '', `✓ JAR file saved to: ${savePath}`],
+        }));
+        alert(`JAR file saved successfully!\n\n${savePath}`);
+      }
+    } catch (error) {
+      showError('Failed to Save JAR', 'Could not copy the JAR file to the selected location.', error);
+    }
   };
 
   const handleExportAndTest = () => {
@@ -563,6 +697,16 @@ const App: React.FC = () => {
           </Button>
         </DialogActions>
       </Dialog>
+
+      {/* Build Console */}
+      <BuildConsole
+        open={buildConsole.open}
+        onClose={() => setBuildConsole({ open: false, output: [], isBuilding: false, success: null, jarPath: null })}
+        buildOutput={buildConsole.output}
+        isBuilding={buildConsole.isBuilding}
+        buildSuccess={buildConsole.success}
+        onCopyJar={buildConsole.success ? handleCopyJar : undefined}
+      />
     </Box>
   );
 };

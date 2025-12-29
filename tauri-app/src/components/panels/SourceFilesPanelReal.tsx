@@ -43,19 +43,19 @@ const SourceFilesPanelReal: React.FC<SourceFilesPanelProps> = ({ project, onOpen
   const [fileContent, setFileContent] = useState<string>('');
   const [loading, setLoading] = useState(false);
 
-  // Load file tree when project changes
+  // Load file tree when project changes or is modified
   useEffect(() => {
     if (project?.projectPath) {
       loadFileTree();
     }
-  }, [project?.projectPath]);
+  }, [project?.projectPath, project?.timestamps?.modified]);
 
   const loadFileTree = async () => {
     if (!project?.projectPath) return;
 
     setLoading(true);
     try {
-      const tree = await buildFileTree(project.projectPath, project.projectPath);
+      const tree = await buildFileTree(project.projectPath, project.projectPath, project.metadata?.name || 'Project');
       setFileTree(tree);
       // Auto-expand src folder
       if (tree) {
@@ -69,7 +69,7 @@ const SourceFilesPanelReal: React.FC<SourceFilesPanelProps> = ({ project, onOpen
     }
   };
 
-  const buildFileTree = async (dirPath: string, basePath: string): Promise<FileNode> => {
+  const buildFileTree = async (dirPath: string, basePath: string, displayName?: string): Promise<FileNode> => {
     try {
       const entries = await readDir(dirPath);
       const children: FileNode[] = [];
@@ -78,7 +78,7 @@ const SourceFilesPanelReal: React.FC<SourceFilesPanelProps> = ({ project, onOpen
         const entryPath = await join(dirPath, entry.name);
 
         if (entry.isDirectory) {
-          const childNode = await buildFileTree(entryPath, basePath);
+          const childNode = await buildFileTree(entryPath, basePath, entry.name);
           children.push(childNode);
         } else if (entry.isFile && shouldShowFile(entry.name)) {
           children.push({
@@ -97,7 +97,7 @@ const SourceFilesPanelReal: React.FC<SourceFilesPanelProps> = ({ project, onOpen
       });
 
       return {
-        name: dirPath === basePath ? project.metadata?.name || 'Project' : dirPath.split('/').pop() || dirPath,
+        name: displayName || 'Project',
         path: dirPath,
         isDirectory: true,
         children,
