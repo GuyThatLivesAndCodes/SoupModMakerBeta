@@ -20,12 +20,26 @@
     "fs:allow-stat",
     "fs:allow-copy-file",
     "fs:default",
-    "shell:allow-execute",
-    "shell:allow-spawn",
+    "shell:allow-open",
     {
       "identifier": "fs:scope",
       "allow": ["**"],
       "deny": []
+    },
+    {
+      "identifier": "shell:allow-open",
+      "allow": [
+        {
+          "name": "gradlew-windows",
+          "cmd": "cmd",
+          "args": ["/C", "gradlew.bat", "$ARGS"]
+        },
+        {
+          "name": "gradlew-unix",
+          "cmd": "sh",
+          "args": ["-c", "./gradlew $ARGS"]
+        }
+      ]
     }
   ]
 }

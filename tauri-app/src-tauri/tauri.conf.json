@@ -43,32 +43,7 @@
   },
   "plugins": {
     "shell": {
-      "scope": [
-        {
-          "name": "gradlew",
-          "cmd": "gradlew.bat",
-          "args": true,
-          "sidecar": false
-        },
-        {
-          "name": "gradlew-unix",
-          "cmd": "gradlew",
-          "args": true,
-          "sidecar": false
-        },
-        {
-          "name": "cmd",
-          "cmd": "cmd",
-          "args": ["/C", "gradlew.bat", "build"],
-          "sidecar": false
-        },
-        {
-          "name": "sh",
-          "cmd": "sh",
-          "args": ["-c", "./gradlew build"],
-          "sidecar": false
-        }
-      ]
+      "open": true
     }
   }
 }

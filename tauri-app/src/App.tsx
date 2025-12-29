@@ -415,11 +415,10 @@ const App: React.FC = () => {
 
       // Determine the gradle wrapper command based on OS
       const isWindows = navigator.platform.toLowerCase().includes('win');
-      const gradleCommand = isWindows ? 'gradlew.bat' : './gradlew';
-      const gradleTask = 'build';
+      const commandName = isWindows ? 'gradlew-windows' : 'gradlew-unix';
 
-      // Run Gradle build command
-      const command = Command.create(gradleCommand, [gradleTask], {
+      // Run Gradle build command using the configured shell command
+      const command = Command.create(commandName, ['build'], {
         cwd: projectPath,
       });
 
