@@ -450,22 +450,34 @@ const App: React.FC = () => {
         output: [...prev.output, '✓ Found gradle-wrapper.jar'],
       }));
 
-      // Check Java installation
+      // Check Java installation (warning only, don't block)
       try {
         const javaCheck = Command.create(isWindows ? 'gradlew-windows' : 'gradlew-unix', ['--version'], {
           cwd: projectPath,
         });
         const javaResult = await javaCheck.execute();
-        if (javaResult.code !== 0) {
-          throw new Error('Java not found or not properly configured.\nPlease install Java JDK 17 or later.');
+        if (javaResult.code === 0) {
+          setBuildConsole((prev) => ({
+            ...prev,
+            output: [...prev.output, '✓ Java is available', ''],
+          }));
+        } else {
+          setBuildConsole((prev) => ({
+            ...prev,
+            output: [...prev.output, '⚠ Could not verify Java (this is okay if JAVA_HOME is set)', ''],
+          }));
         }
+      } catch (error) {
         setBuildConsole((prev) => ({
           ...prev,
-          output: [...prev.output, '✓ Java is available', '', 'Starting build...'],
+          output: [...prev.output, '⚠ Could not verify Java (this is okay if JAVA_HOME is set)', ''],
         }));
-      } catch (error) {
-        throw new Error('Failed to verify Java installation.\nPlease ensure Java JDK 17+ is installed and in your PATH.');
       }
+
+      setBuildConsole((prev) => ({
+        ...prev,
+        output: [...prev.output, 'Starting build...'],
+      }));
 
       // Run Gradle build command using the configured shell command
       const command = Command.create(commandName, ['build'], {
