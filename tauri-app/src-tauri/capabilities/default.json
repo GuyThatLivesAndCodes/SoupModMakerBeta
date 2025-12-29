@@ -20,6 +20,7 @@
     "fs:allow-stat",
     "fs:allow-copy-file",
     "fs:default",
+    "shell:allow-execute",
     "shell:allow-open",
     {
       "identifier": "fs:scope",
@@ -27,7 +28,7 @@
       "deny": []
     },
     {
-      "identifier": "shell:allow-open",
+      "identifier": "shell:allow-execute",
       "allow": [
         {
           "name": "gradlew-windows",
