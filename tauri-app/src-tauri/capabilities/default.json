@@ -26,23 +26,6 @@
       "identifier": "fs:scope",
       "allow": ["**"],
       "deny": []
-    },
-    {
-      "identifier": "shell:allow-execute",
-      "allow": [
-        {
-          "name": "gradlew",
-          "cmd": "gradlew.bat",
-          "args": true,
-          "sidecar": false
-        },
-        {
-          "name": "gradlew-unix",
-          "cmd": "./gradlew",
-          "args": true,
-          "sidecar": false
-        }
-      ]
     }
   ]
 }
