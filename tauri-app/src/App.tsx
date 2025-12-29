@@ -16,7 +16,7 @@ import {
 } from '@mui/material';
 import { join } from '@tauri-apps/api/path';
 import { open, save } from '@tauri-apps/plugin-dialog';
-import { readDir, copyFile } from '@tauri-apps/plugin-fs';
+import { readDir, copyFile, exists } from '@tauri-apps/plugin-fs';
 import { Command } from '@tauri-apps/plugin-shell';
 import EnhancedToolbar from './components/EnhancedToolbar';
 import LeftPanelSystem from './components/LeftPanelSystem';
