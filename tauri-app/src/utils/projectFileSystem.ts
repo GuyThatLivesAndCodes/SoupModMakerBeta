@@ -186,6 +186,7 @@ async function generateSourceFiles(
   );
 
   if (!manuallyEditedFiles.includes(mainClassPath)) {
+    await mkdir(await dirname(mainClassPath), { recursive: true });
     const mainClassContent = generateMainModClass(metadata, className);
     await writeTextFile(mainClassPath, mainClassContent);
   }
