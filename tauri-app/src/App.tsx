@@ -479,8 +479,8 @@ const App: React.FC = () => {
         output: [...prev.output, 'Starting build...'],
       }));
 
-      // Run Gradle build command using the configured shell command
-      const command = Command.create(commandName, ['build'], {
+      // Run Gradle build command with verbose flags for debugging
+      const command = Command.create(commandName, ['build', '--stacktrace', '--info'], {
         cwd: projectPath,
       });
 
