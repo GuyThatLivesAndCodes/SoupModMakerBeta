@@ -33,12 +33,12 @@
         {
           "name": "gradlew-windows",
           "cmd": "cmd",
-          "args": ["/C", "gradlew.bat", "$ARGS"]
+          "args": ["/C", "echo Executing Gradle wrapper... && gradlew.bat", "$ARGS"]
         },
         {
           "name": "gradlew-unix",
           "cmd": "sh",
-          "args": ["-c", "./gradlew $ARGS"]
+          "args": ["-c", "echo Executing Gradle wrapper... && ./gradlew $ARGS"]
         }
       ]
     }
