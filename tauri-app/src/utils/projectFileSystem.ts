@@ -435,16 +435,18 @@ if "%OS%"=="Windows_NT" endlocal
 `;
   await writeTextFile(gradlewBatPath, gradlewBatContent);
 
-  // Download gradle-wrapper.jar from official Gradle distribution
+  // Download gradle-wrapper.jar from Maven Central
   try {
-    const wrapperJarUrl = 'https://raw.githubusercontent.com/gradle/gradle/v8.5.0/gradle/wrapper/gradle-wrapper.jar';
+    const wrapperJarUrl = 'https://repo1.maven.org/maven2/org/gradle/gradle-wrapper/8.5/gradle-wrapper-8.5.jar';
+    console.log('Downloading gradle-wrapper.jar from:', wrapperJarUrl);
     const response = await fetch(wrapperJarUrl);
     if (response.ok) {
       const jarBytes = new Uint8Array(await response.arrayBuffer());
       const wrapperJarPath = await join(projectPath, 'gradle/wrapper/gradle-wrapper.jar');
       await writeFile(wrapperJarPath, jarBytes);
+      console.log('Successfully downloaded gradle-wrapper.jar');
     } else {
-      console.warn('Failed to download gradle-wrapper.jar, build may fail');
+      console.error('Failed to download gradle-wrapper.jar:', response.status, response.statusText);
     }
   } catch (error) {
     console.error('Error downloading gradle-wrapper.jar:', error);
